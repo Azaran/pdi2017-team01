@@ -30,7 +30,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -42,15 +49,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interfaces\IDeviceRepository.cs" />
+    <Compile Include="Interfaces\IMicrocontrollerRepository.cs" />
+    <Compile Include="Interfaces\IMqttService.cs" />
+    <Compile Include="Interfaces\IPowerStripRepository.cs" />
     <Compile Include="Models\Device.cs" />
     <Compile Include="Models\Microcontroller.cs" />
     <Compile Include="Models\PowerStrip.cs" />
     <Compile Include="MqttService.cs" />
+    <Compile Include="Persistence\MqttServiceDbContext.cs" />
+    <Compile Include="Persistence\PowerStripEntity.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Interfaces\" />
-    <Folder Include="Persistence\" />
+    <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

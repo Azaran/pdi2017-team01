@@ -1,7 +1,15 @@
-﻿namespace MqttService.Interfaces
+﻿using System;
+using System.Collections.Generic;
+using MqttService.Models;
+
+namespace MqttService.Interfaces
 {
-    interface IMicrocontrollerRepository : IDeviceRepository
+    public interface IMicrocontrollerRepository : IDisposable
     {
-        void UpdateTemperature(double value);
+        void AddMicrocontroller(Microcontroller microcontroller);
+        IEnumerable<Microcontroller> AllMicrocontrollers();
+        void Update(IEnumerable<Microcontroller> microcontrollers);
+        void DeleteMicrocontroller(Microcontroller microcontroller);
+        void DeleteAll();
     }
 }

@@ -11,8 +11,8 @@ namespace TestCLI
             var mc = new Microcontroller("aaaa", false, 64.2);
             var ps = new PowerStrip("bbbb");
 
-            Console.WriteLine("MC: {0}, {1}, {2}", mc.ID, mc.Powered, mc.Temperature);
-            Console.WriteLine("PS: {0}, {1}", ps.ID, ps.Powered);
+            Console.WriteLine("MC: {0}, {1}, {2}", mc.DeviceId, mc.Powered, mc.Temperature);
+            Console.WriteLine("PS: {0}, {1}", ps.DeviceId, ps.Powered);
         }
     }
 }
