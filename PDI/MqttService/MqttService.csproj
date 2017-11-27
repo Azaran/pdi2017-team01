@@ -49,7 +49,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interfaces\IDeviceRepository.cs" />
     <Compile Include="Interfaces\IMicrocontrollerRepository.cs" />
     <Compile Include="Interfaces\IMqttService.cs" />
     <Compile Include="Interfaces\IPowerStripRepository.cs" />
@@ -57,8 +56,14 @@
     <Compile Include="Models\Microcontroller.cs" />
     <Compile Include="Models\PowerStrip.cs" />
     <Compile Include="MqttService.cs" />
+    <Compile Include="Persistence\Entity\MicrocontrollerEntity.cs" />
+    <Compile Include="Persistence\Extensions.cs" />
+    <Compile Include="Persistence\Mapper\MicrocontrollerMapper.cs" />
+    <Compile Include="Persistence\Mapper\PowerStripMapper.cs" />
     <Compile Include="Persistence\MqttServiceDbContext.cs" />
-    <Compile Include="Persistence\PowerStripEntity.cs" />
+    <Compile Include="Persistence\Entity\PowerStripEntity.cs" />
+    <Compile Include="Persistence\Sql\MicrocontrollerSqlRepository.cs" />
+    <Compile Include="Persistence\Sql\PowerStripSqlRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />
