@@ -69,6 +69,7 @@
     <Compile Include="Persistence\Mapper\PowerStripMapper.cs" />
     <Compile Include="Persistence\MqttServiceDbContext.cs" />
     <Compile Include="Persistence\Entity\PowerStripEntity.cs" />
+    <Compile Include="Persistence\SqlRepository.cs" />
     <Compile Include="Persistence\Sql\MicrocontrollerSqlRepository.cs" />
     <Compile Include="Persistence\Sql\PowerStripSqlRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

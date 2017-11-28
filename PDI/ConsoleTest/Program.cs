@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 using MqttService.Models;
 using MqttService.Persistence;
-using MqttService.Persistence.Sql;
 
 namespace ConsoleTest
 {
@@ -19,16 +18,19 @@ namespace ConsoleTest
             Console.WriteLine("MC: {0}, {1}, {2}", mc.DeviceId, mc.Powered, mc.Temperature);
             Console.WriteLine("PS: {0}, {1}", ps.DeviceId, ps.Powered);
 
-            var db = new MqttServiceDbContext();
-            var mcr = new MicrocontrollerSqlRepository(db);
-            var psr = new PowerStripSqlRepository(db);
+            var repo = new SqlRepository();
 
             Console.WriteLine("Trying to load data");
-            List<Microcontroller> mcrs = mcr.AllMicrocontrollers().ToList();
-            List<PowerStrip> pwss = psr.AllPowerStrips().ToList();
+            List<Microcontroller> mcrs = repo.Microcontrollers.All().ToList();
+            List<PowerStrip> pwss = repo.PowerStrips.All().ToList();
 
-            Console.WriteLine("Microcontrollers: {0}", mcrs.Count());
-            Console.WriteLine("Power Strips: {0}", pwss.Count());
+            Console.WriteLine("Microcontrollers: {0}", mcrs.Count);
+            Console.WriteLine("Power Strips: {0}", pwss.Count);
+
+            if (mcrs.Count == 0)
+                repo.Microcontrollers.Add(mc);
+            if (pwss.Count == 0)
+                repo.PowerStrips.Add(ps);
         }
     }
 }
