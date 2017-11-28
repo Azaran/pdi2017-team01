@@ -6,10 +6,10 @@ namespace MqttService.Interfaces
 {
     public interface IPowerStripRepository : IDisposable
     {
-        void AddPowerStrip(PowerStrip powerstrip);
-        IEnumerable<PowerStrip> AllPowerStrips();
+        void Add(PowerStrip powerstrip);
+        IEnumerable<PowerStrip> All();
         void Update(IEnumerable<PowerStrip> powerstrips);
-        void DeletePowerStrip(PowerStrip powerstrip);
+        void Delete(PowerStrip powerstrip);
         void DeleteAll();
     }
 }

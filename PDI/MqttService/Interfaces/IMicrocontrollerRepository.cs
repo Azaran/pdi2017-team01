@@ -6,10 +6,10 @@ namespace MqttService.Interfaces
 {
     public interface IMicrocontrollerRepository : IDisposable
     {
-        void AddMicrocontroller(Microcontroller microcontroller);
-        IEnumerable<Microcontroller> AllMicrocontrollers();
+        void Add(Microcontroller microcontroller);
+        IEnumerable<Microcontroller> All();
         void Update(IEnumerable<Microcontroller> microcontrollers);
-        void DeleteMicrocontroller(Microcontroller microcontroller);
+        void Delete(Microcontroller microcontroller);
         void DeleteAll();
     }
 }

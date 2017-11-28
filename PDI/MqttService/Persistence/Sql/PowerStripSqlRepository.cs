@@ -16,13 +16,13 @@ namespace MqttService.Persistence.Sql
             this._mqqtSvcDbContext = mqttSvcDbContext;
         }
 
-        public void AddPowerStrip(PowerStrip powerstrip)
+        public void Add(PowerStrip powerstrip)
         {
             this._mqqtSvcDbContext.PowerStrips.Add(this._powerstripMapper.Map(powerstrip));
             this._mqqtSvcDbContext.SaveChanges();
         }
 
-        public IEnumerable<PowerStrip> AllPowerStrips()
+        public IEnumerable<PowerStrip> All()
         {
             return this._powerstripMapper.Map(this._mqqtSvcDbContext.PowerStrips);
         }
@@ -32,7 +32,7 @@ namespace MqttService.Persistence.Sql
             this._mqqtSvcDbContext.DeleteAll<PowerStripEntity>();
         }
 
-        public void DeletePowerStrip(PowerStrip powerstrip)
+        public void Delete(PowerStrip powerstrip)
         {
             foreach (PowerStripEntity pe in this._mqqtSvcDbContext.PowerStrips)
             {
@@ -71,7 +71,7 @@ namespace MqttService.Persistence.Sql
 
                 if (!found)
                 {
-                    AddPowerStrip(ps);
+                    Add(ps);
                 }
             }
             this._mqqtSvcDbContext.SaveChanges();

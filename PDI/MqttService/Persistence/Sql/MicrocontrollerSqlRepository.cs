@@ -16,13 +16,13 @@ namespace MqttService.Persistence.Sql
             this._mqqtSvcDbContext = mqttSvcDbContext;
         }
 
-        public void AddMicrocontroller(Microcontroller microcontroller)
+        public void Add(Microcontroller microcontroller)
         {
             this._mqqtSvcDbContext.Microcontrollers.Add(this._microcontrollerMapper.Map(microcontroller));
             this._mqqtSvcDbContext.SaveChanges();
         }
 
-        public IEnumerable<Microcontroller> AllMicrocontrollers()
+        public IEnumerable<Microcontroller> All()
         {
             return this._microcontrollerMapper.Map(this._mqqtSvcDbContext.Microcontrollers);
         }
@@ -32,7 +32,7 @@ namespace MqttService.Persistence.Sql
             this._mqqtSvcDbContext.DeleteAll<MicrocontrollerEntity>();
         }
 
-        public void DeleteMicrocontroller(Microcontroller microcontroller)
+        public void Delete(Microcontroller microcontroller)
         {
             foreach (MicrocontrollerEntity me in this._mqqtSvcDbContext.Microcontrollers)
             {
@@ -72,7 +72,7 @@ namespace MqttService.Persistence.Sql
 
                 if(!found)
                 {
-                    AddMicrocontroller(mc);
+                    Add(mc);
                 }
             }
             this._mqqtSvcDbContext.SaveChanges();
