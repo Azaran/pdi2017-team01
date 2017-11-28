@@ -19,7 +19,7 @@ namespace ConsoleTest
             Console.WriteLine("MC: {0}, {1}, {2}", mc.DeviceId, mc.Powered, mc.Temperature);
             Console.WriteLine("PS: {0}, {1}", ps.DeviceId, ps.Powered);
 
-            var db = new MqttServiceDbContext("Data Source=./TestDB.sqlite");
+            var db = new MqttServiceDbContext();
             var mcr = new MicrocontrollerSqlRepository(db);
             var psr = new PowerStripSqlRepository(db);
 
@@ -27,8 +27,8 @@ namespace ConsoleTest
             List<Microcontroller> mcrs = mcr.AllMicrocontrollers().ToList();
             List<PowerStrip> pwss = psr.AllPowerStrips().ToList();
 
-            Console.WriteLine("Microcontrollers: {}", mcrs.Count());
-            Console.WriteLine("Power Strips: {}", pwss.Count());
+            Console.WriteLine("Microcontrollers: {0}", mcrs.Count());
+            Console.WriteLine("Power Strips: {0}", pwss.Count());
         }
     }
 }

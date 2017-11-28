@@ -1,3 +1,4 @@
 URL:      xklima22.database.windows.net
 Login:    xklima22
 Password: KwVJpEswDe9uyXcx
+Database: PdiDevices
