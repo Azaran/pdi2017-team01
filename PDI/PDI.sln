@@ -1,13 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2009
+VisualStudioVersion = 15.0.27004.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MqttService", "MqttService\MqttService.csproj", "{1C4735F3-4E4B-4EB9-87AD-8852BAB4DA40}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTest", "ConsoleTest\ConsoleTest.csproj", "{C609DA93-F932-4AC1-AE4B-660A138B57F0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp", "WebApp\WebApp.csproj", "{AFD2FEEB-90F3-4712-AF2A-D72B47C75E03}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApp", "WebApp\WebApp.csproj", "{EF134093-FBCC-4474-9F3B-58624FF4888A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{C609DA93-F932-4AC1-AE4B-660A138B57F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C609DA93-F932-4AC1-AE4B-660A138B57F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C609DA93-F932-4AC1-AE4B-660A138B57F0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AFD2FEEB-90F3-4712-AF2A-D72B47C75E03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AFD2FEEB-90F3-4712-AF2A-D72B47C75E03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AFD2FEEB-90F3-4712-AF2A-D72B47C75E03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AFD2FEEB-90F3-4712-AF2A-D72B47C75E03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF134093-FBCC-4474-9F3B-58624FF4888A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF134093-FBCC-4474-9F3B-58624FF4888A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF134093-FBCC-4474-9F3B-58624FF4888A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF134093-FBCC-4474-9F3B-58624FF4888A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
