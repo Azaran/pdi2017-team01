@@ -11,5 +11,6 @@ namespace MqttService.Interfaces
         void Update(IEnumerable<Microcontroller> microcontrollers);
         void Delete(Microcontroller microcontroller);
         void DeleteAll();
+        bool Contains(string deviceId);
     }
 }

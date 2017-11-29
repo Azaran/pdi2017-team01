@@ -18,8 +18,11 @@ namespace MqttService.Persistence.Sql
 
         public void Add(PowerStrip powerstrip)
         {
-            this._mqqtSvcDbContext.PowerStrips.Add(this._powerstripMapper.Map(powerstrip));
-            this._mqqtSvcDbContext.SaveChanges();
+            if (!Contains(powerstrip.DeviceId))
+            {
+                this._mqqtSvcDbContext.PowerStrips.Add(this._powerstripMapper.Map(powerstrip));
+                this._mqqtSvcDbContext.SaveChanges();
+            }
         }
 
         public IEnumerable<PowerStrip> All()
@@ -75,6 +78,17 @@ namespace MqttService.Persistence.Sql
                 }
             }
             this._mqqtSvcDbContext.SaveChanges();
+        }
+
+        public bool Contains(string deviceId)
+        {
+            foreach (PowerStripEntity pe in this._mqqtSvcDbContext.PowerStrips)
+            {
+                System.Console.WriteLine("PSE: {0}", pe.DeviceId);
+                if (pe.DeviceId == deviceId)
+                    return true;
+            }
+            return false;
         }
     }
 }

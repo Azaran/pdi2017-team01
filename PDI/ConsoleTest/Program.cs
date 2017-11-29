@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 using MqttService.Models;
 using MqttService.Persistence;
+using MqttService.Client;
 
 namespace ConsoleTest
 {
@@ -11,7 +12,7 @@ namespace ConsoleTest
     {
         static void Main(string[] args)
         {
-            var svc = new MqttService.MqttService();
+            /*var svc = new MqttService.MqttService();
             var mc = new Microcontroller("aaaa", false, 64.2);
             var ps = new PowerStrip("bbbb");
 
@@ -30,7 +31,10 @@ namespace ConsoleTest
             if (mcrs.Count == 0)
                 repo.Microcontrollers.Add(mc);
             if (pwss.Count == 0)
-                repo.PowerStrips.Add(ps);
+                repo.PowerStrips.Add(ps);*/
+            var c = new Client("iot.eclipse.org");
+            c.Subscribe(Topic.DeviceAnnounce());
+
         }
     }
 }

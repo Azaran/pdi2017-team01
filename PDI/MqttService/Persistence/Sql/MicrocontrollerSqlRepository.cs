@@ -18,8 +18,11 @@ namespace MqttService.Persistence.Sql
 
         public void Add(Microcontroller microcontroller)
         {
-            this._mqqtSvcDbContext.Microcontrollers.Add(this._microcontrollerMapper.Map(microcontroller));
-            this._mqqtSvcDbContext.SaveChanges();
+            if (!Contains(microcontroller.DeviceId))
+            {
+                this._mqqtSvcDbContext.Microcontrollers.Add(this._microcontrollerMapper.Map(microcontroller));
+                this._mqqtSvcDbContext.SaveChanges();
+            }
         }
 
         public IEnumerable<Microcontroller> All()
@@ -76,6 +79,16 @@ namespace MqttService.Persistence.Sql
                 }
             }
             this._mqqtSvcDbContext.SaveChanges();
+        }
+
+        public bool Contains(string deviceId)
+        {
+            foreach(MicrocontrollerEntity me in this._mqqtSvcDbContext.Microcontrollers)
+            {
+                if (me.DeviceId == deviceId)
+                    return true;
+            }
+            return false;
         }
     }
 }
