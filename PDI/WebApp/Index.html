@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>TurnOn - Cluster Administration</title>
+</head>
+<body>
+    <h1>TurnOn</h1>
+    <h2>Welcome to <span style="color:aqua">netsearch</span> cluster administration!</h2>
+    <div>
+        <p>Available machines:</p>
+        <ul id="mcus" />
+    </div>
+    
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
+    <script>
+        var uri = 'api/mcu';
+
+        $(document).ready(function () {
+            // Send an AJAX request
+            $.getJSON(uri)
+                .done(function (data) {
+                    // On success, 'data' contains a list of products.
+                    $.each(data, function (key, item) {
+                        // Add a list item for the product.
+                        $('<li>', { html: formatItem(item) }).appendTo($('#mcus'));
+                    });
+                });
+        });
+
+        var on = "<span style=\"color:palegreen\">ON</span>";
+        var off = "<span style=\"color:red\">OFF</span>"
+
+        function formatItem(item) {
+            return item.DeviceId + ':' + printState(item.Powered);
+        }
+
+        function printState(state) {
+            if (state)
+                return on;
+            return off;
+        }
+    </script>
+</body>
+</html>

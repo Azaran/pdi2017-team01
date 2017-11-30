@@ -20,14 +20,14 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // Následující GUID je určen pro ID knihovny typelib, pokud je tento projekt zpřístupněn modulu COM.
-[assembly: Guid("afd2feeb-90f3-4712-af2a-d72b47c75e03")]
+[assembly: Guid("ef134093-fbcc-4474-9f3b-58624ff4888a")]
 
 // Informace o verzi sestavení jsou tvořeny následujícími čtyřmi hodnotami:
 //
-//      Major Version
-//      Minor Version 
-//      Build Number
-//      Revision
+//      Hlavní verze
+//      Podverze 
+//      Číslo sestavení
+//      Revize
 //
 // Můžete zadat všechny tyto hodnoty, nebo použít výchozí hodnoty pro číslo revize a sestavení 
 // zadáním znaku * jako v příkladu níže:

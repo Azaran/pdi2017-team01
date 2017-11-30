@@ -38,13 +38,8 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="GnatMQ.Net, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GnatMQ.1.1.0.0\lib\net45\GnatMQ.Net.dll</HintPath>
-      <Aliases>global, Gnat</Aliases>
-    </Reference>
     <Reference Include="M2Mqtt.Net, Version=4.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\M2Mqtt.4.3.0.0\lib\net45\M2Mqtt.Net.dll</HintPath>
-      <Aliases>global,Mqtt</Aliases>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -59,7 +54,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Communication\Client.cs" />
+    <Compile Include="Client\Client.cs" />
+    <Compile Include="Client\DeviceType.cs" />
+    <Compile Include="Client\Topic.cs" />
     <Compile Include="Interfaces\IMicrocontrollerRepository.cs" />
     <Compile Include="Interfaces\IMqttService.cs" />
     <Compile Include="Interfaces\IPowerStripRepository.cs" />
