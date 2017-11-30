@@ -1,0 +1,23 @@
+﻿body {
+    background-color: azure;
+}
+
+#headerDiv {
+    background-color: cornflowerblue;
+    padding: 8px;
+    padding-left: 20px;
+
+    font-family: 'Century Gothic';
+    border-radius: 6px 6px;
+}
+
+#machine {
+    margin: 10px;
+    padding: 5px;
+    background-color:aquamarine;
+    font-family: 'Century Gothic';
+}
+
+h2 {
+    font-size: medium;
+}
