@@ -84,6 +84,8 @@
     <Content Include="Global.asax" />
     <Content Include="Index.html" />
     <Content Include="Resources\icon.ico" />
+    <Content Include="Resources\powerOff.png" />
+    <Content Include="Resources\powerOn.png" />
     <Content Include="Resources\StyleSheet.css" />
     <Content Include="Web.config" />
   </ItemGroup>

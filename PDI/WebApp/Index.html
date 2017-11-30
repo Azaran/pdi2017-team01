@@ -21,17 +21,20 @@
     
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
     <script>
-        var uri = 'api/mcu';
-        
+        // Read Action URI
+        var readUri = 'api/mcu/read';
+
+        // Load the page
         $(document).ready(function () {
             // Send an AJAX request
-            $.getJSON(uri)
+            $.getJSON(readUri)
                 .done(function (data) {
-                    // On success, 'data' contains a list of products.
+                    // On success, 'data' contains a list of machines
                     $.each(data, function (key, item) {
-                        // Add a list item for the product.
+                        // Add a list item for available machines.
                         $('<li>', { html: formatItem(item) }).appendTo($('#mcus'));
 
+                        // Add an entry for a single machine
                         var e = $('<div id="machine">' + item.DeviceId + '</div>');
                         $('#machineList').append(e);
 
@@ -39,11 +42,12 @@
                 });
         });
 
-        var on = "<span style=\"color:palegreen\">ON</span>";
-        var off = "<span style=\"color:red\">OFF</span>"
+        // Icons for ON/OFF
+        var on = "<img src=\"Resources/powerOn.png\" alt=\"Machine is ON\" title=\"Machine is ON\">";
+        var off = "<img src=\"Resources/powerOff.png\" alt=\"Machine is OFF\" title=\"Machine is OFF\">";
 
         function formatItem(item) {
-            return item.DeviceId + ':' + printState(item.Powered);
+            return (item.Powered ? on : off) + " " + item.DeviceId;
         }
 
         function printState(state) {

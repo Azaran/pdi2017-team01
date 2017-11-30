@@ -17,11 +17,15 @@ namespace WebApp.Controllers
             new MicrocontrollerEntity { DeviceId = "MegaTron", Powered = false, Temperature = 45.4}
         };
 
+        [HttpGet]
+        [ActionName("Read")]
         public IEnumerable<MicrocontrollerEntity> GetAllMcus()
         {
             return mcus;
         }
 
+        [HttpGet]
+        [ActionName("Read")]
         public IHttpActionResult GetMcu(string id)
         {
             var mcu = mcus.FirstOrDefault((p) => p.DeviceId == id);
