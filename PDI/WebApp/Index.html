@@ -1,37 +1,53 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <link rel="stylesheet" type="text/css" href="Resources/StyleSheet.css">
+    <link rel="icon" href="Resources/icon.ico">
     <title>TurnOn - Cluster Administration</title>
 </head>
 <body>
-    <h1>TurnOn</h1>
-    <h2>Welcome to <span style="color:aqua">netsearch</span> cluster administration!</h2>
+    <div id="headerDiv">
+        <h1>TurnOn</h1>
+        <h2>Welcome to <span style="color:aqua">netsearch</span> cluster administration!</h2>
+    </div>
     <div>
         <p>Available machines:</p>
         <ul id="mcus" />
     </div>
+
+    <div id="machineList">
+        
+    </div>
     
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
     <script>
-        var uri = 'api/mcu';
+        // Read Action URI
+        var readUri = 'api/mcu/read';
 
+        // Load the page
         $(document).ready(function () {
             // Send an AJAX request
-            $.getJSON(uri)
+            $.getJSON(readUri)
                 .done(function (data) {
-                    // On success, 'data' contains a list of products.
+                    // On success, 'data' contains a list of machines
                     $.each(data, function (key, item) {
-                        // Add a list item for the product.
+                        // Add a list item for available machines.
                         $('<li>', { html: formatItem(item) }).appendTo($('#mcus'));
+
+                        // Add an entry for a single machine
+                        var e = $('<div id="machine">' + item.DeviceId + '</div>');
+                        $('#machineList').append(e);
+
                     });
                 });
         });
 
-        var on = "<span style=\"color:palegreen\">ON</span>";
-        var off = "<span style=\"color:red\">OFF</span>"
+        // Icons for ON/OFF
+        var on = "<img src=\"Resources/powerOn.png\" alt=\"Machine is ON\" title=\"Machine is ON\">";
+        var off = "<img src=\"Resources/powerOff.png\" alt=\"Machine is OFF\" title=\"Machine is OFF\">";
 
         function formatItem(item) {
-            return item.DeviceId + ':' + printState(item.Powered);
+            return (item.Powered ? on : off) + " " + item.DeviceId;
         }
 
         function printState(state) {
