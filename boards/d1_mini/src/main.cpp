@@ -179,7 +179,7 @@ void Mqtt_Reconnect() {
 			Publish_Connection(tmp_str);
 			// ... and resubscribe
 			client.subscribe(TOPIC_IN_PC_STATE);
-			client.subscribe(TOPIC_IN_SYNC);
+			client.subscribe(TOPIC_IN_PC_RESET);
 			break;
 		} else {
 			Serial.print("failed, rc=");
@@ -259,10 +259,10 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 			target_state = 0;
 		}
 
-			Serial.print("Checking state! target|current=");
-			Serial.print(target_state);
-			Serial.print("|");
-			Serial.println(current_pc_status);
+		Serial.print("Checking state! target|current=");
+		Serial.print(target_state);
+		Serial.print("|");
+		Serial.println(current_pc_status);
 		// toggle output (PC power switch) if we need to change state
 		if (target_state != current_pc_status) {
 			if (target_state == 1)
@@ -272,17 +272,20 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		}
 
 
-	} /*	else if (strcmp(TOPIC_IN_SYNC, topic) == 0) {
-		// check for sync topic
-		// we should get '1' as sync request
-		if ((char)payload[0] == '1') {
-			is_syncing = 1;
-			// invalidate last sent data, triggering resend
-			last_published_status = 255;
-			last_published_temp = -127.0;
+	} else if (strcmp(TOPIC_IN_PC_RESET, topic) == 0) {
+		unsigned char reset = 0;
+		if ((char)payload[0] == 't') {
+				Serial.println("/reset");
+				reset = 1;
+		}
+
+		Serial.print("Checking state! current=");
+		Serial.println(current_pc_status);
+		if (current_pc_status == 1) {
+			ResetPc();
+			reset = 0;
 		}
 	}
-	*/
 }
 
 void TogglePc(int state) {

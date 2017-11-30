@@ -21,20 +21,21 @@
 #define ROOT_TOPIC		 "/vecera.vojta@gmail.com"
 
 #define MQTT_CLIENT_ID   "d1_mini"  // note: if you have multiple devices, assign them different ID's
+#define MQTT_CLIENT_CATEGORY "mcu"		// "mcu" or "strip" (strip = https://www.itead.cc/sonoff-pow.html and similar)
 #define MQTT_USE_RETAIN   false         // set to true if you want last msg for all topics retained on server, so you get it automatically on client connect
 
 #define TOPIC_OUT_CONN       ROOT_TOPIC "/conn"
-#define TOPIC_OUT_PC_STATUS  ROOT_TOPIC "/" MQTT_CLIENT_ID "/status"
-#define TOPIC_OUT_TEMP       ROOT_TOPIC "/" MQTT_CLIENT_ID "/temp"
-#define TOPIC_IN_PC_STATE    ROOT_TOPIC "/" MQTT_CLIENT_ID "/state"
-#define TOPIC_IN_SYNC        ROOT_TOPIC "/" MQTT_CLIENT_ID "/sync"
+#define TOPIC_OUT_PC_STATUS  ROOT_TOPIC "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID "/status"
+#define TOPIC_OUT_TEMP       ROOT_TOPIC "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID "/temp"
+#define TOPIC_IN_PC_STATE    ROOT_TOPIC "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID "/state"
+#define TOPIC_IN_PC_RESET    ROOT_TOPIC "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID "/reset"
 
 #define PUB_PERIODIC_MS     1000 * 60 * 1  // publish data periodically every 10 minutes
 #define PUB_TEMP_THRESHOLD  2.0f            // besides periodically, temperature will be transmitted if changed more than this
 #define PUB_MIN_MS          1000            // don't publish more often that this, even on status/temp change
 
-#define DEBOUNCE_STATUS_MS    2000    // 2 second debounce for PC on/off status
-#define TEMP_REFRESH_MS       5000   // periodic read of temperature
+#define DEBOUNCE_STATUS_MS    1000 * 2   // 2 second debounce for PC on/off status
+#define TEMP_REFRESH_MS       1000 * 15   // periodic read of temperature
 
 // enum to cycle through all data that is to be sent periodically
 typedef enum
@@ -57,3 +58,4 @@ void Publish_PcStatus(unsigned char pc_status);
 void Publish_Temperature(float temp);
 void Subscription_Callback(char* topic, unsigned char* payload, unsigned int length);
 void TogglePc(int state);
+void ResetPc(void);
