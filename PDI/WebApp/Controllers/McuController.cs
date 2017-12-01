@@ -12,9 +12,15 @@ namespace WebApp.Controllers
     {
         List<MicrocontrollerEntity> mcus = new List<MicrocontrollerEntity>
         {
-            new MicrocontrollerEntity { DeviceId = "Tansy 2", Powered = true, Temperature = 45.4},
-            new MicrocontrollerEntity { DeviceId = "Tansy 3", Powered = true, Temperature = 25.4},
-            new MicrocontrollerEntity { DeviceId = "MegaTron", Powered = false, Temperature = 45.4}
+            new MicrocontrollerEntity { DeviceId = "Tansy2", Powered = true, Temperature = 45.4},
+            new MicrocontrollerEntity { DeviceId = "Tansy3", Powered = true, Temperature = 25.4},
+            new MicrocontrollerEntity { DeviceId = "MegaTron", Powered = false, Temperature = 45.4},
+            new MicrocontrollerEntity { DeviceId = "Tansy4", Powered = true, Temperature = 45.4},
+            new MicrocontrollerEntity { DeviceId = "Tansy5", Powered = true, Temperature = 25.4},
+            new MicrocontrollerEntity { DeviceId = "MegaTron 2", Powered = false, Temperature = 45.4},
+            new MicrocontrollerEntity { DeviceId = "Tansy6", Powered = true, Temperature = 45.4},
+            new MicrocontrollerEntity { DeviceId = "Tansy7", Powered = true, Temperature = 25.4},
+            new MicrocontrollerEntity { DeviceId = "MegaTron 3", Powered = false, Temperature = 45.4}
         };
 
         [HttpGet]
@@ -40,7 +46,27 @@ namespace WebApp.Controllers
         [ActionName("Poweroff")]
         public IHttpActionResult PostPowerOff(string id)
         {
-            mcus.Add(new MicrocontrollerEntity { DeviceId = id, Powered = false, Temperature = -273.4 });
+            return Ok(200);
+        }
+
+        [HttpPost]
+        [ActionName("Poweron")]
+        public IHttpActionResult PostPowerOn(string id)
+        {
+            return Ok(200);
+        }
+
+        [HttpPost]
+        [ActionName("Kill")]
+        public IHttpActionResult PostKill(string id)
+        {
+            return Ok(200);
+        }
+
+        [HttpPost]
+        [ActionName("Restart")]
+        public IHttpActionResult PostRestart(string id)
+        {
             return Ok(200);
         }
     }
