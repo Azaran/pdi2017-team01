@@ -38,8 +38,11 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="M2Mqtt.Net, Version=4.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\M2Mqtt.4.3.0.0\lib\net45\M2Mqtt.Net.dll</HintPath>
+    <Reference Include="MQTTnet, Version=2.5.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MQTTnet.2.5.3\lib\net461\MQTTnet.dll</HintPath>
+    </Reference>
+    <Reference Include="MQTTnet.Core, Version=2.5.3.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MQTTnet.2.5.3\lib\net461\MQTTnet.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -54,12 +57,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Log\Logger.cs" />
     <Compile Include="Client\Client.cs" />
     <Compile Include="Client\DeviceType.cs" />
     <Compile Include="Client\Topic.cs" />
     <Compile Include="Interfaces\IMicrocontrollerRepository.cs" />
     <Compile Include="Interfaces\IMqttService.cs" />
     <Compile Include="Interfaces\IPowerStripRepository.cs" />
+    <Compile Include="Log\LogLevel.cs" />
     <Compile Include="Migrations\201711281350577_FirstMigration.cs" />
     <Compile Include="Migrations\201711281350577_FirstMigration.Designer.cs">
       <DependentUpon>201711281350577_FirstMigration.cs</DependentUpon>
@@ -89,5 +94,6 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
