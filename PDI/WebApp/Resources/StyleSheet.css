@@ -1,10 +1,11 @@
-﻿html, body {
+﻿/* Default values*/
+html, body {
     background-color: azure;
     font-family: 'Century Gothic';
-    height: 100%;
-    overflow: hidden;
+    min-width: 750px;
 }
 
+/* Web header */
 #headerDiv {
     background-color: cornflowerblue;
     padding: 8px;
@@ -12,40 +13,53 @@
     border-radius: 6px 6px;
 }
 
+/* Welcome text */
+h2 {
+    font-size: medium;
+}
+
+/* Right menu div */
 #avaiableMachines {
     float: right;
+    right: 0;
+    top: 0;
     position: sticky;
-    overflow: auto;
     height: 100%;
     width: 20%;
-    margin: 0;
     margin-top: 10px;
     margin-left: 10px;
     background-color: antiquewhite;
+    min-width: 200px;
 }
 
+/* Right menu header */
 #menuHeader {
     margin-left: 10px;
 }
 
+/* Menu list */
 #mcus {
     list-style-type: none;
 }
 
+/* Main machine div */
 #machineList {
     left: 0;
     width: 80%;
+    min-width: 550px;
 }
 
+/* Each machine in a class div */
 .machine {
     margin: 10px;
     padding: 5px;
-    background-color:aquamarine;
-    
+    background-color: aquamarine;
+
+    /* The buttons wont overflow div */
+    overflow: hidden;
 }
 
-.powerOff {
-    background-color: #FF0000;
+.machineButtonsDiv button, .stripButtonsDiv button {
     border: none;
     color: white;
     padding: 15px 32px;
@@ -58,6 +72,42 @@
     font-family: 'Century Gothic';
 }
 
-h2 {
-    font-size: medium;
+.machineButtonsDiv, .stripButtonsDiv {
+    position: relative;
+    left: 50px;
+    float: left;
+    width: 100%;
+}
+
+.machineDescDiv, .stripDescDiv {
+    display: inline;
+    float: left;
+    width: 10%;
+    left: 10px;
+    top: 30px;
+}
+
+.machineValuesDiv, .stripValuesDiv {
+    width: 50%;
+    display: inline;
+}
+
+/* Power Off button */
+.postOff, .postStripOff {
+    background-color: #FF0000;
+}
+
+/* Restart button */
+.postRestart {
+    background-color: #FF6600;
+}
+
+/* Power On button */
+.postOn, .postStripOn {
+    background-color: #00FF00;
+}
+
+/* Kill button */
+.postKill {
+    background-color: #000000;
 }

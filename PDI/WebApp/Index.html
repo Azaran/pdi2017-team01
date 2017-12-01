@@ -13,20 +13,24 @@
     <div id="avaiableMachines">
         <p id="menuHeader">Available machines:</p>
         <ul id="mcus" />
+        <!-- List of all available machines will be appended -->
     </div>
 
     <div id="machineList">
-        
+        <!-- Entries for all machines will be appended -->
     </div>
     
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
     <script>
         // Read Action URI
-        var readUri = 'api/mcu/read';
+        var readUriMcu = 'api/mcu/read';
+        var readUriStrip = 'api/strip/read';
 
         // Icons for ON/OFF
-        var on = "<img src=\"Resources/powerOn.png\" alt=\"Machine is ON\" title=\"Machine is ON\">";
-        var off = "<img src=\"Resources/powerOff.png\" alt=\"Machine is OFF\" title=\"Machine is OFF\">";
+        var onMcu = "<img src=\"Resources/powerOn.png\" alt=\"Machine is ON\" title=\"Machine is ON\">";
+        var offMcu = "<img src=\"Resources/powerOff.png\" alt=\"Machine is OFF\" title=\"Machine is OFF\">";
+        var onStrip = "<img src=\"Resources/powerOn.png\" alt=\"Power is ON\" title=\"Power is ON\">";
+        var offStrip = "<img src=\"Resources/powerOff.png\" alt=\"Power is OFF\" title=\"Power is OFF\">";
 
         // Load the page
         $(document).ready(function () {
@@ -34,53 +38,115 @@
         });
 
         function onLoad() {
-            // Send an AJAX request
-            $.getJSON(readUri).done(function (data) {
+            $.ajaxSetup({
+                async: false
+            });
+
+            // Read Strip table
+            stripData = $.getJSON(readUriStrip);
+
+            // Read Strip table
+            var stripData;
+            $.getJSON(readUriStrip).done(function (data) {
+                stripData = data;
+            });
+
+            // Read MCU table
+            $.getJSON(readUriMcu).done(function (data) {
                 // On success, 'data' contains a list of machines
                 $.each(data, function (key, item) {
                     // Add a list item for available machines.
                     $('<li>', { html: formatListItem(item) }).appendTo($('#mcus'));
 
                     // Add an entry for a single machine
-                    var e = $('<div class="machine" id="' + item.DeviceId + '">' + formatMachine(item) + '</div>');
+                    var e = $('<div class="machine" id="' + item.DeviceId + 'Machine">' + formatMachine(item, stripData) + '</div>');
                     $('#machineList').append(e);
 
                 });
             });
         }
 
-        // Format entry of machine
-        function formatMachine(item) {
-            var name = '<p id=headerMachine>' + item.DeviceId + '</p>';
-
-            // TODO: branch for machine on/off - different buttons
-            var powerOff = '<button onclick="powerOff(' + item.DeviceId + ')" class="powerOff">Turn OFF</button>';
-
-            return name + powerOff;
+        // Format single item of available machines
+        function formatListItem(item) {
+            return (item.Powered ? onMcu : offMcu) + " " + item.DeviceId;
         }
 
+        // Format entry of machine
+        function formatMachine(item, stripData) {
+            var name = '<p class="headerMachine">' + item.DeviceId + '</p>';
+            var desc = '<div class="machineDescDiv"><p>Status:</p><p>Temperature:</p></div>';
+            var values = '<div class="machineValuesDiv"><p>' + (item.Powered ? onMcu : offMcu) + '</p><p>' + item.Temperature + '°C</p></div>';
+            var buttons = '<div class="machineButtonsDiv">' + (item.Powered ? createOnButtons(item.DeviceId) : createOffButtons(item.DeviceId)) + '</div >';
+            var power = '<p class="headerStrip">Power Control</p>';
+            var strip = '<p class="headerStrip' + item.DeviceId + 'Missing">No power control connected.</p>';
 
+            $.each(stripData, function (key, stripUnit) {
+                if (stripUnit.DeviceId == item.DeviceId) {
+                    strip = '<div class="headerStripValue">' + formatStrip(item) + '</div>';
+                }
+            });
 
-        // Format item of available machines
-        function formatListItem(item) {
-            return (item.Powered ? on : off) + " " + item.DeviceId;
+            return name + desc + values + buttons + power + strip;
+        }
+
+        function createOnButtons(id) {
+            var offButton = '<button onclick="postOff(\'' + id + '\')" class="postOff">Turn OFF</button>';
+            var restartButton = '<button onclick="postRestart(\'' + id + '\')" class="postRestart">Restart</button>';
+            var killButton = '<button onclick="postKill(\'' + id + '\')" class="postKill">Hard Shutdown</button>';
+
+            return offButton + restartButton + killButton;
+        }
+
+        function createOffButtons(id) {
+            return '<button onclick="postOn(\'' + id + '\')" class="postOn">Turn ON</button>';
+        }
+
+        // Format strip info
+        function formatStrip(item) {
+            var desc = '<div class="stripDescDiv"><p>Status:</p><p>Consumption:</p></div>';
+            var values = '<div class="stripValuesDiv"><p>' + (item.Powered ? onStrip : offStrip) + '</p><p>' + item.Consumption + ' W</p></div>';
+            var buttons = '<div class="stripButtonsDiv">' + (item.Powered ? createStripOnButtons(item.DeviceId) : createStripOffButtons(item.DeviceId)) + '</div> <p> </p>';
+            //var xoxo = "<div>xoxo</div>"
+            return desc + values + buttons; // + xoxo;
+        }
+
+        function createStripOnButtons(id) {
+            return '<button onclick="postStripOff(\'' + id + '\')" class="postStripOff">Turn OFF</button>';
+        }
+
+        function createStripOffButtons(id) {
+            return '<button onclick="postStripOn(\'' + id + '\')" class="postStripOn">Turn ON</button>';
         }
 
         // Possible actions
         function postOff(id) {
-            $.post("/api/mcu/poweroff/" + id);
+            if (confirm("Do you really want to turn OFF " + id + " ?"))
+                $.post("/api/mcu/poweroff/" + id);
         }
 
         function postOn(id) {
-            $.post("/api/mcu/poweron/" + id);
+            if (confirm("Do you really want to turn ON " + id + " ?"))
+                $.post("/api/mcu/poweron/" + id);
         }
 
         function postKill(id) {
-            $.post("/api/mcu/kill/" + id);
+            if (confirm("Do you really want to HARD SHUTDOWN " + id + " ?"))
+                $.post("/api/mcu/kill/" + id);
         }
 
         function postRestart(id) {
-            $.post("/api/mcu/restart/" + id);
+            if (confirm("Do you really want to RESTART " + id + " ?"))
+                $.post("/api/mcu/restart/" + id);
+        }
+
+        function postStripOff(id) {
+            if (confirm("Do you really want to turn OFF the POWER for " + id + " ?"))
+                $.post("/api/strip/poweroff/" + id);
+        }
+
+        function postStripOn(id) {
+            if (confirm("Do you really want to turn ON the POWER for " + id + " ?"))
+                $.post("/api/strip/poweron/" + id);
         }
     </script>
 </body>
