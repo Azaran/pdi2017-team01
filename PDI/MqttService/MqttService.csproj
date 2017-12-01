@@ -57,14 +57,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Log\Logger.cs" />
+    <Compile Include="Logging\Logger.cs" />
     <Compile Include="Client\Client.cs" />
     <Compile Include="Client\DeviceType.cs" />
     <Compile Include="Client\Topic.cs" />
     <Compile Include="Interfaces\IMicrocontrollerRepository.cs" />
     <Compile Include="Interfaces\IMqttService.cs" />
     <Compile Include="Interfaces\IPowerStripRepository.cs" />
-    <Compile Include="Log\LogLevel.cs" />
+    <Compile Include="Logging\LogLevel.cs" />
     <Compile Include="Migrations\201711281350577_FirstMigration.cs" />
     <Compile Include="Migrations\201711281350577_FirstMigration.Designer.cs">
       <DependentUpon>201711281350577_FirstMigration.cs</DependentUpon>

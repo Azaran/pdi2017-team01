@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using MqttService.Models;
 using MqttService.Persistence;
-using MqttService.Log;
+using MqttService.Logging;
 using MQTTnet;
 using MQTTnet.Core;
 using MQTTnet.Core.Client;
