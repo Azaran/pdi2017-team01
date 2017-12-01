@@ -1,6 +1,12 @@
 #include <ESP8266WiFi.h>
-#include <PubSubClient.h>
 #include <dht.h>
+#include <MQTTWebSocketClient.h>
+//#include <IPStack.h>
+//#include <SPI.h>
+//#include <MQTTClient.h>
+//#include <Countdown.h>
+#include <WebSocketsClient.h>
+#include <PubSubClient.h>
 #include "main.h"
 // Wemos D1 mini pins compared to ESP GPIO
 // source: https://www.wemos.cc/product/d1-mini.html
@@ -26,13 +32,16 @@
 
 // setup instances for Wifi and 1Wire
 WiFiClient espClient;
-PubSubClient client(espClient);
+MQTTWebSocketClient mws;
+WebSocketsClient ws;
+//IPStack ipstack(ws);
+//MQTT::Client<IPStack, Countdown, 512, 1> *client = NULL;
+PubSubClient client;
 dht DHT;
 
 // variables
 char mqtt_msg[50];
 uint16_t connect_cnt = 0;
-uint16_t sync_cnt = 0;
 
 unsigned char current_pc_status = 255;
 unsigned char last_read_status = 255;
@@ -45,8 +54,37 @@ long last_temp_request_ms = 0;
 
 long last_published_ms = 0;
 PubData_e data_to_publish = PUB_DATA_PC_STATUS;
-unsigned char is_syncing = 0;
 
+#define USE_SERIAL Serial
+void webSocketEvent(WStype_t type, uint8_t * payload, size_t length) {
+
+	switch(type) {
+		case WStype_DISCONNECTED:
+			USE_SERIAL.printf("[WSc] Disconnected!\n");
+			break;
+		case WStype_CONNECTED: {
+			USE_SERIAL.printf("[WSc] Connected to url: %s\n", payload);
+
+			// send message to server when Connected
+			ws.sendTXT("Connected");
+		}
+			break;
+		case WStype_TEXT:
+			USE_SERIAL.printf("[WSc] get text: %s\n", payload);
+
+			// send message to server
+			// webSocket.sendTXT("message here");
+			break;
+		case WStype_BIN:
+			USE_SERIAL.printf("[WSc] get binary length: %u\n", length);
+			hexdump(payload, length);
+
+			// send data to server
+			// webSocket.sendBIN(payload, length);
+			break;
+	}
+
+}
 ///////////////////////////////////////////////////////////////////////////////
 /// Init functions
 ///////////////////////////////////////////////////////////////////////////////
@@ -78,19 +116,25 @@ void setup() {
 	delay(500);
 	// connect to Wifi
 	Wifi_Connect();
+	// setup WebSockets
+	ws.begin(CLOUDMQTT_SERVER, CLOUDMQTT_PORT, "/");
+	ws.onEvent(webSocketEvent);
+	ws.setReconnectInterval(5000);
 	// setup MQTT
-	client.setServer(CLOUDMQTT_SERVER, CLOUDMQTT_PORT);
-	client.setCallback(Subscription_Callback);
+	//client.setServer(CLOUDMQTT_SERVER, CLOUDMQTT_PORT);
+	//client.setClient(ws);
+	//client.setCallback(Subscription_Callback);
 }
 
 void loop() {
+	ws.loop();
 	// handle MQTT connection
-	if (!client.connected()) {
-		connect_cnt++;
-		Mqtt_Reconnect();
-		last_published_ms = last_status_unstable_ms = millis(); // init time here, it takes a while to connect
-	}
-	client.loop();
+//	if (!client.connected()) {
+//		connect_cnt++;
+//		Mqtt_Reconnect();
+//		last_published_ms = last_status_unstable_ms = millis(); // init time here, it takes a while to connect
+//	}
+//	client.loop();
 
 	// handle temperature reading
 	if ((millis() - last_temp_request_ms) > TEMP_REFRESH_MS) {
@@ -132,28 +176,21 @@ void loop() {
 	if ((now_ms - last_published_ms) > PUB_MIN_MS) {
 		// send on PC status change
 		if (current_pc_status != last_published_status) {
-			Publish_PcStatus(current_pc_status);
+	//		Publish_PcStatus(current_pc_status);
 			last_published_ms = now_ms;
 		}	else if (fabs(current_temp - last_published_temp) > PUB_TEMP_THRESHOLD) {
 			// or on temperature change
-			Publish_Temperature(current_temp);
+		//	Publish_Temperature(current_temp);
 			last_published_ms = now_ms;
-		}	else if (is_syncing) {
-		// check if we were syncing data
-			char tmp_str[20];
-
-			// increment counter and publish status
-			sync_cnt++;
-			snprintf(tmp_str, sizeof(tmp_str), "Synced(%d)", sync_cnt);
-			Publish_Connection(tmp_str);
-			is_syncing = 0; // sync complete at this point, everything that needed to be sent is above
 		} else if ((now_ms - last_published_ms) > PUB_PERIODIC_MS) {
 		// send periodically
 			// cycle through data to publish periodically
 			if (data_to_publish >= PUB_DATA_MAX) data_to_publish = PUB_DATA_PC_STATUS;
 
-			if (data_to_publish == PUB_DATA_PC_STATUS) Publish_PcStatus(current_pc_status);
-			else if (data_to_publish == PUB_DATA_TEMP) Publish_Temperature(current_temp);
+			//if (data_to_publish == PUB_DATA_PC_STATUS)
+			//	Publish_PcStatus(current_pc_status);
+			//else if (data_to_publish == PUB_DATA_TEMP)
+			//  Publish_Temperature(current_temp);
 
 			data_to_publish = (PubData_e)(data_to_publish + 1);
 			last_published_ms = now_ms;
@@ -172,7 +209,8 @@ void Mqtt_Reconnect() {
 	while (!client.connected()) {
 		Serial.print("Attempting MQTT connection...");
 		// Attempt to connect
-		if (client.connect(MQTT_CLIENT_ID, CLOUDMQTT_USER, CLOUDMQTT_PASS)) {
+		//if (client.connect(MQTT_CLIENT_ID, CLOUDMQTT_USER, CLOUDMQTT_PASS)) {
+	if (client.connect(MQTT_CLIENT_ID)) {
 			// Once connected, publish an announcement...
 			snprintf(tmp_str, sizeof(tmp_str), "%s", MQTT_CLIENT_ID);
 			Serial.println(tmp_str);
@@ -267,7 +305,7 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		if (target_state != current_pc_status) {
 			if (target_state == 1)
 				TogglePc(TOGGLE_ON);
-			else
+			else if (target_state == 0)
 				TogglePc(TOGGLE_OFF);
 		}
 

@@ -1,4 +1,5 @@
 #include <WiFi.h>
+#include <WebSocketsClient.h>
 #include <PubSubClient.h>
 #include <dht.h>
 #include "main.h"
@@ -32,7 +33,6 @@ dht DHT;
 // variables
 char mqtt_msg[50];
 uint16_t connect_cnt = 0;
-uint16_t sync_cnt = 0;
 
 unsigned char current_pc_status = 255;
 unsigned char last_read_status = 255;
@@ -45,7 +45,6 @@ long last_temp_request_ms = 0;
 
 long last_published_ms = 0;
 PubData_e data_to_publish = PUB_DATA_PC_STATUS;
-unsigned char is_syncing = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Init functions
@@ -138,15 +137,6 @@ void loop() {
 			// or on temperature change
 			Publish_Temperature(current_temp);
 			last_published_ms = now_ms;
-		}	else if (is_syncing) {
-		// check if we were syncing data
-			char tmp_str[20];
-
-			// increment counter and publish status
-			sync_cnt++;
-			snprintf(tmp_str, sizeof(tmp_str), "Synced(%d)", sync_cnt);
-			Publish_Connection(tmp_str);
-			is_syncing = 0; // sync complete at this point, everything that needed to be sent is above
 		} else if ((now_ms - last_published_ms) > PUB_PERIODIC_MS) {
 		// send periodically
 			// cycle through data to publish periodically
@@ -172,9 +162,10 @@ void Mqtt_Reconnect() {
 	while (!client.connected()) {
 		Serial.print("Attempting MQTT connection...");
 		// Attempt to connect
-		if (client.connect(MQTT_CLIENT_ID, CLOUDMQTT_USER, CLOUDMQTT_PASS)) {
+		//if (client.connect(MQTT_CLIENT_ID, CLOUDMQTT_USER, CLOUDMQTT_PASS)) {
+	if (client.connect(MQTT_CLIENT_ID)) {
 			// Once connected, publish an announcement...
-			snprintf(tmp_str, sizeof(tmp_str), "%s", MQTT_CLIENT_ID);
+			snprintf(tmp_str, sizeof(tmp_str), "%s", MQTT_CLIENT_PATH);
 			Serial.println(tmp_str);
 			Publish_Connection(tmp_str);
 			// ... and resubscribe
@@ -267,7 +258,7 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		if (target_state != current_pc_status) {
 			if (target_state == 1)
 				TogglePc(TOGGLE_ON);
-			else
+			else if (target_state == 0)
 				TogglePc(TOGGLE_OFF);
 		}
 

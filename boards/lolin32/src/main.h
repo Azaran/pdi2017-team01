@@ -1,6 +1,6 @@
-#define GPIO_OUT_PWSW     4  //  // used as output, for toggling transistor that turns on/off the pc
-#define GPIO_OUT_RTSW     16  //  // used as output, for toggling transistor that resets the pc
-#define GPIO_IN_STATUS  17  //  // used as input for PC on/off status
+#define GPIO_OUT_PWSW     16  //  // used as output, for toggling transistor that turns on/off the pc
+#define GPIO_OUT_RTSW     17  //  // used as output, for toggling transistor that resets the pc
+#define GPIO_IN_STATUS	5  //  // used as input for PC on/off status
 #define GPIO_TEMP					2		//
 #define OUT_STATE_ACTIVE    1   // use define so it's simple to change if signal should be active high or low (NPN or PNP BJT)
 #define OUT_STATE_INACTIVE  (!OUT_STATE_ACTIVE)
@@ -13,21 +13,23 @@
 #define WIFI_SSID   "VeBe"
 #define WIFI_PASS   "87654321"
 
-#define CLOUDMQTT_SERVER "mqtt.dioty.co"
-#define CLOUDMQTT_PORT   1883
-#define CLOUDMQTT_USER   "vecera.vojta@gmail.com"
-#define CLOUDMQTT_PASS   "6b1efe2a"
+#define CLOUDMQTT_SERVER "broker.hivemq.com"
+#define CLOUDMQTT_PORT   8000
+#define CLOUDMQTT_USER   ""
+#define CLOUDMQTT_PASS   ""
 #define ROOT_TOPIC		 "/vecera.vojta@gmail.com"
 
-#define MQTT_CLIENT_ID   "lolin32"  // note: if you have multiple devices, assign them different ID's
+#define MQTT_CLIENT_ID   "lolin32_321423132"  // note: if you have multiple devices, assign them different ID's
 #define MQTT_CLIENT_CATEGORY "mcu"		// "mcu" or "strip" (strip = https://www.itead.cc/sonoff-pow.html and similar)
+#define MQTT_CLIENT_PATH "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID
+
 #define MQTT_USE_RETAIN   false         // set to true if you want last msg for all topics retained on server, so you get it automatically on client connect
 
 #define TOPIC_OUT_CONN       ROOT_TOPIC "/conn"
-#define TOPIC_OUT_PC_STATUS  ROOT_TOPIC "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID "/status"
-#define TOPIC_OUT_TEMP       ROOT_TOPIC "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID "/temp"
-#define TOPIC_IN_PC_STATE    ROOT_TOPIC "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID "/state"
-#define TOPIC_IN_PC_RESET    ROOT_TOPIC "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID "/reset"
+#define TOPIC_OUT_PC_STATUS  ROOT_TOPIC MQTT_CLIENT_PATH "/status"
+#define TOPIC_OUT_TEMP       ROOT_TOPIC MQTT_CLIENT_PATH "/temp"
+#define TOPIC_IN_PC_STATE    ROOT_TOPIC MQTT_CLIENT_PATH "/state"
+#define TOPIC_IN_PC_RESET    ROOT_TOPIC MQTT_CLIENT_PATH "/reset"
 
 #define PUB_PERIODIC_MS     1000 * 60 * 1  // publish data periodically every 10 minutes
 #define PUB_TEMP_THRESHOLD  2.0f            // besides periodically, temperature will be transmitted if changed more than this

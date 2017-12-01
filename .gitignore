@@ -318,3 +318,4 @@ OpenCover/
 
 # Azure Stream Analytics local run output 
 ASALocalRun/
+/boards/lolin32/src/sketch_lolin32_mqtt/sketch_lolin32_mqtt.ino
