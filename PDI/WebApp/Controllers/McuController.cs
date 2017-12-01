@@ -10,7 +10,7 @@ namespace WebApp.Controllers
 {
     public class McuController : ApiController
     {
-        MicrocontrollerEntity[] mcus = new MicrocontrollerEntity[]
+        List<MicrocontrollerEntity> mcus = new List<MicrocontrollerEntity>
         {
             new MicrocontrollerEntity { DeviceId = "Tansy 2", Powered = true, Temperature = 45.4},
             new MicrocontrollerEntity { DeviceId = "Tansy 3", Powered = true, Temperature = 25.4},
@@ -19,7 +19,7 @@ namespace WebApp.Controllers
 
         [HttpGet]
         [ActionName("Read")]
-        public IEnumerable<MicrocontrollerEntity> GetAllMcus()
+        public List<MicrocontrollerEntity> GetAllMcus()
         {
             return mcus;
         }
@@ -34,6 +34,14 @@ namespace WebApp.Controllers
                 return NotFound();
             }
             return Ok(mcu);
+        }
+
+        [HttpPost]
+        [ActionName("Poweroff")]
+        public IHttpActionResult PostPowerOff(string id)
+        {
+            mcus.Add(new MicrocontrollerEntity { DeviceId = id, Powered = false, Temperature = -273.4 });
+            return Ok(200);
         }
     }
 }

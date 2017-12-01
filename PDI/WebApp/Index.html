@@ -10,8 +10,8 @@
         <h1>TurnOn</h1>
         <h2>Welcome to <span style="color:aqua">netsearch</span> cluster administration!</h2>
     </div>
-    <div>
-        <p>Available machines:</p>
+    <div id="avaiableMachines">
+        <p id="menuHeader">Available machines:</p>
         <ul id="mcus" />
     </div>
 
@@ -24,36 +24,63 @@
         // Read Action URI
         var readUri = 'api/mcu/read';
 
-        // Load the page
-        $(document).ready(function () {
-            // Send an AJAX request
-            $.getJSON(readUri)
-                .done(function (data) {
-                    // On success, 'data' contains a list of machines
-                    $.each(data, function (key, item) {
-                        // Add a list item for available machines.
-                        $('<li>', { html: formatItem(item) }).appendTo($('#mcus'));
-
-                        // Add an entry for a single machine
-                        var e = $('<div id="machine">' + item.DeviceId + '</div>');
-                        $('#machineList').append(e);
-
-                    });
-                });
-        });
-
         // Icons for ON/OFF
         var on = "<img src=\"Resources/powerOn.png\" alt=\"Machine is ON\" title=\"Machine is ON\">";
         var off = "<img src=\"Resources/powerOff.png\" alt=\"Machine is OFF\" title=\"Machine is OFF\">";
 
-        function formatItem(item) {
+        // Load the page
+        $(document).ready(function () {
+            onLoad();
+        });
+
+        function onLoad() {
+            // Send an AJAX request
+            $.getJSON(readUri).done(function (data) {
+                // On success, 'data' contains a list of machines
+                $.each(data, function (key, item) {
+                    // Add a list item for available machines.
+                    $('<li>', { html: formatListItem(item) }).appendTo($('#mcus'));
+
+                    // Add an entry for a single machine
+                    var e = $('<div class="machine" id="' + item.DeviceId + '">' + formatMachine(item) + '</div>');
+                    $('#machineList').append(e);
+
+                });
+            });
+        }
+
+        // Format entry of machine
+        function formatMachine(item) {
+            var name = '<p id=headerMachine>' + item.DeviceId + '</p>';
+
+            // TODO: branch for machine on/off - different buttons
+            var powerOff = '<button onclick="powerOff(' + item.DeviceId + ')" class="powerOff">Turn OFF</button>';
+
+            return name + powerOff;
+        }
+
+
+
+        // Format item of available machines
+        function formatListItem(item) {
             return (item.Powered ? on : off) + " " + item.DeviceId;
         }
 
-        function printState(state) {
-            if (state)
-                return on;
-            return off;
+        // Possible actions
+        function postOff(id) {
+            $.post("/api/mcu/poweroff/" + id);
+        }
+
+        function postOn(id) {
+            $.post("/api/mcu/poweron/" + id);
+        }
+
+        function postKill(id) {
+            $.post("/api/mcu/kill/" + id);
+        }
+
+        function postRestart(id) {
+            $.post("/api/mcu/restart/" + id);
         }
     </script>
 </body>
