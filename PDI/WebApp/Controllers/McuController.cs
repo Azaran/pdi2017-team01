@@ -17,10 +17,10 @@ namespace WebApp.Controllers
             new MicrocontrollerEntity { DeviceId = "MegaTron", Powered = false, Temperature = 45.4},
             new MicrocontrollerEntity { DeviceId = "Tansy4", Powered = true, Temperature = 45.4},
             new MicrocontrollerEntity { DeviceId = "Tansy5", Powered = true, Temperature = 25.4},
-            new MicrocontrollerEntity { DeviceId = "MegaTron 2", Powered = false, Temperature = 45.4},
+            new MicrocontrollerEntity { DeviceId = "MegaTron2", Powered = false, Temperature = 45.4},
             new MicrocontrollerEntity { DeviceId = "Tansy6", Powered = true, Temperature = 45.4},
             new MicrocontrollerEntity { DeviceId = "Tansy7", Powered = true, Temperature = 25.4},
-            new MicrocontrollerEntity { DeviceId = "MegaTron 3", Powered = false, Temperature = 45.4}
+            new MicrocontrollerEntity { DeviceId = "MegaTron_3", Powered = false, Temperature = 45.4}
         };
 
         [HttpGet]

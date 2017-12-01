@@ -8,7 +8,7 @@
 <body>
     <div id="headerDiv">
         <h1>TurnOn</h1>
-        <h2>Welcome to <span style="color:aqua">netsearch</span> cluster administration!</h2>
+        <h2>Welcome to netsearch cluster administration!</h2>
     </div>
     <div id="avaiableMachines">
         <p id="menuHeader">Available machines:</p>
@@ -68,17 +68,17 @@
 
         // Format single item of available machines
         function formatListItem(item) {
-            return (item.Powered ? onMcu : offMcu) + " " + item.DeviceId;
+            return "<a href=\"#" + item.DeviceId + "Machine\">" + (item.Powered ? onMcu : offMcu) + " " + item.DeviceId + "</a>";
         }
 
         // Format entry of machine
         function formatMachine(item, stripData) {
-            var name = '<p class="headerMachine">' + item.DeviceId + '</p>';
+            var name = '<div class="headerMachineDiv"><p class="headerMachine">' + item.DeviceId + '</p></div>';
             var desc = '<div class="machineDescDiv"><p>Status:</p><p>Temperature:</p></div>';
             var values = '<div class="machineValuesDiv"><p>' + (item.Powered ? onMcu : offMcu) + '</p><p>' + item.Temperature + '°C</p></div>';
             var buttons = '<div class="machineButtonsDiv">' + (item.Powered ? createOnButtons(item.DeviceId) : createOffButtons(item.DeviceId)) + '</div >';
             var power = '<p class="headerStrip">Power Control</p>';
-            var strip = '<p class="headerStrip' + item.DeviceId + 'Missing">No power control connected.</p>';
+            var strip = '<p class="headerStripMissing">No power control connected.</p>';
 
             $.each(stripData, function (key, stripUnit) {
                 if (stripUnit.DeviceId == item.DeviceId) {
@@ -148,6 +148,16 @@
             if (confirm("Do you really want to turn ON the POWER for " + id + " ?"))
                 $.post("/api/strip/poweron/" + id);
         }
+
+        // Smooth scrolling
+        $(document).on('click', 'a[href^="#"]', function (event) {
+            event.preventDefault();
+
+            $('html, body').animate({
+                scrollTop: $($.attr(this, 'href')).offset().top
+            }, 500);
+        });
+
     </script>
 </body>
 </html>
