@@ -511,7 +511,7 @@ void WebSocketsClient::sendHeader(WSclient_t * client) {
 	// add extra headers; by default this includes "Origin: file://"
 	if (client->extraHeaders) {
 		handshake += client->extraHeaders + NEW_LINE;
-	}	
+	}
 
 	handshake += WEBSOCKETS_STRING("User-Agent: arduino-WebSocket-Client\r\n");
 
@@ -576,8 +576,8 @@ void WebSocketsClient::handleHeader(WSclient_t * client, String * headerLine) {
             } else if(headerName.equalsIgnoreCase(WEBSOCKETS_STRING("Set-Cookie"))) {
                 if (headerValue.indexOf(WEBSOCKETS_STRING("HttpOnly")) > -1) {
                     client->cSessionId = headerValue.substring(headerValue.indexOf('=') + 1, headerValue.indexOf(";"));
-                } else { 
-                    client->cSessionId = headerValue.substring(headerValue.indexOf('=') + 1); 
+                } else {
+                    client->cSessionId = headerValue.substring(headerValue.indexOf('=') + 1);
                 }
             }
         } else {
@@ -689,6 +689,7 @@ void WebSocketsClient::connectedCb() {
 #if (WEBSOCKETS_NETWORK_TYPE == NETWORK_ESP8266)
     _client.tcp->setNoDelay(true);
 
+#if !defined(ESP32)
     if(_client.isSSL && _fingerprint.length()) {
         if(!_client.ssl->verify(_fingerprint.c_str(), _host.c_str())) {
             DEBUG_WEBSOCKETS("[WS-Client] certificate mismatch\n");
@@ -696,6 +697,7 @@ void WebSocketsClient::connectedCb() {
             return;
         }
     }
+#endif
 #endif
 
     // send Header to Server
