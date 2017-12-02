@@ -4,21 +4,21 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using MqttService.Persistence.Entity;
+using MqttService.Models;
 
 namespace WebApp.Controllers
 {
     public class StripController : ApiController
     {
-        List<PowerStripEntity> strips = new List<PowerStripEntity>
+        List<PowerStrip> strips = new List<PowerStrip>
         {
-            new PowerStripEntity { DeviceId = "Tansy2", Powered = true},
-            new PowerStripEntity { DeviceId = "MegaTron", Powered = false}
+            new PowerStrip ("Tansy2", true),
+            new PowerStrip ("Tansy4", false)
         };
 
         [HttpGet]
         [ActionName("Read")]
-        public List<PowerStripEntity> GetAllStrips()
+        public List<PowerStrip> GetAllStrips()
         {
             return strips;
         }

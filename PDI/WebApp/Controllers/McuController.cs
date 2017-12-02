@@ -1,31 +1,26 @@
-﻿using MqttService.Persistence.Entity;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
+using MqttService.Models;
 
 namespace WebApp.Controllers
 {
     public class McuController : ApiController
     {
-        List<MicrocontrollerEntity> mcus = new List<MicrocontrollerEntity>
+        List<Microcontroller> mcus = new List<Microcontroller>
         {
-            new MicrocontrollerEntity { DeviceId = "Tansy2", Powered = true, Temperature = 45.4},
-            new MicrocontrollerEntity { DeviceId = "Tansy3", Powered = true, Temperature = 25.4},
-            new MicrocontrollerEntity { DeviceId = "MegaTron", Powered = false, Temperature = 45.4},
-            new MicrocontrollerEntity { DeviceId = "Tansy4", Powered = true, Temperature = 45.4},
-            new MicrocontrollerEntity { DeviceId = "Tansy5", Powered = true, Temperature = 25.4},
-            new MicrocontrollerEntity { DeviceId = "MegaTron2", Powered = false, Temperature = 45.4},
-            new MicrocontrollerEntity { DeviceId = "Tansy6", Powered = true, Temperature = 45.4},
-            new MicrocontrollerEntity { DeviceId = "Tansy7", Powered = true, Temperature = 25.4},
-            new MicrocontrollerEntity { DeviceId = "MegaTron_3", Powered = false, Temperature = 45.4}
+            new Microcontroller ("Tansy2", true, 45.4),
+            new Microcontroller ("Tansy3", false, 21.1),
+            new Microcontroller ("Tansy4", true, 44.4),
+            new Microcontroller ("Tansy5", true, 41.9),
         };
 
         [HttpGet]
         [ActionName("Read")]
-        public List<MicrocontrollerEntity> GetAllMcus()
+        public List<Microcontroller> GetAllMcus()
         {
             return mcus;
         }
