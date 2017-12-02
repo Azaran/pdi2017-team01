@@ -9,15 +9,16 @@
     <div id="headerDiv">
         <h1>TurnOn</h1>
         <h2>Welcome to netsearch cluster administration!</h2>
+    </div>    
+
+    <div id="machineList">
+        <!-- Entries for all machines will be appended -->
     </div>
+
     <div id="avaiableMachines">
         <p id="menuHeader">Available machines:</p>
         <ul id="mcus" />
         <!-- List of all available machines will be appended -->
-    </div>
-
-    <div id="machineList">
-        <!-- Entries for all machines will be appended -->
     </div>
     
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-2.0.3.min.js"></script>
@@ -77,7 +78,7 @@
             var desc = '<div class="machineDescDiv"><p>Status:</p><p>Temperature:</p></div>';
             var values = '<div class="machineValuesDiv"><p>' + (item.Powered ? onMcu : offMcu) + '</p><p>' + item.Temperature + '°C</p></div>';
             var buttons = '<div class="machineButtonsDiv">' + (item.Powered ? createOnButtons(item.DeviceId) : createOffButtons(item.DeviceId)) + '</div >';
-            var power = '<p class="headerStrip">Power Control</p>';
+            var power = '<div class="headerStrip"><p class="headerStripP">Power Control</p></div>';
             var strip = '<p class="headerStripMissing">No power control connected.</p>';
 
             $.each(stripData, function (key, stripUnit) {
