@@ -311,7 +311,7 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		Serial.print("Checking state! current=");
 		Serial.println(current_pc_status);
 		if (current_pc_status == 1) {
-			ResetPc();
+			TooglePc(TOGGLE_HARD_OFF);
 			hshut = 0;
 		}
 	}
@@ -324,11 +324,8 @@ void TogglePc(int state) {
 	Serial.println("Power switched!");
 }
 void ResetPc(void) {
-	/*
-	 * TODO: Test reset functionality
-	 */
 	digitalWrite(GPIO_OUT_RTSW, OUT_STATE_ACTIVE);
-	delay(TOGGLE_ON);
+	delay(TOGGLE);
 	digitalWrite(GPIO_OUT_RTSW, OUT_STATE_INACTIVE);
 	Serial.println("Reset!");
 }
