@@ -1,7 +1,11 @@
 #include <ESP8266WiFi.h>
-#include <PubSubClient.h>
 #include <dht.h>
+#include <MQTTWebSocketClient.h>
+#include <Hash.h>
+#include <PubSubClient.h>
 #include "main.h"
+
+
 // Wemos D1 mini pins compared to ESP GPIO
 // source: https://www.wemos.cc/product/d1-mini.html
 // Wemos|ESP
@@ -24,15 +28,21 @@
 
 // note: using ESP GPIO numbers rather than Wemos for easier portability to other ESP versions
 
-// setup instances for Wifi and 1Wire
+// setup instances for Wifi
+#ifdef USE_SSL
 WiFiClient espClient;
-PubSubClient client(espClient);
+#else
+WiFiClientSecure espClient;
+#endif
+#ifdef MQTT_OVER_WEBSOCKETS
+MQTTWebSocketClient mws;
+#endif
+PubSubClient client;
 dht DHT;
 
 // variables
 char mqtt_msg[50];
 uint16_t connect_cnt = 0;
-uint16_t sync_cnt = 0;
 
 unsigned char current_pc_status = 255;
 unsigned char last_read_status = 255;
@@ -45,7 +55,6 @@ long last_temp_request_ms = 0;
 
 long last_published_ms = 0;
 PubData_e data_to_publish = PUB_DATA_PC_STATUS;
-unsigned char is_syncing = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Init functions
@@ -78,9 +87,22 @@ void setup() {
 	delay(500);
 	// connect to Wifi
 	Wifi_Connect();
-	// setup MQTT
 	client.setServer(CLOUDMQTT_SERVER, CLOUDMQTT_PORT);
 	client.setCallback(Subscription_Callback);
+	#ifdef MQTT_OVER_WEBSOCKETS
+	// setup WebSockets
+	#ifdef USE_SSL
+	mws.beginSSL(CLOUDMQTT_SERVER, CLOUDMQTT_PORT, ROOT_TOPIC);
+	#else
+	mws.begin(CLOUDMQTT_SERVER, CLOUDMQTT_PORT, ROOT_TOPIC);
+	#endif
+	//mws.onEvent(webSocketEvent);
+	mws.setReconnectInterval(5000);
+	// setup MQTT over WebSockets
+	client.setClient(mws);
+	#else
+	client.setClient(espClient);
+	#endif
 }
 
 void loop() {
@@ -138,22 +160,15 @@ void loop() {
 			// or on temperature change
 			Publish_Temperature(current_temp);
 			last_published_ms = now_ms;
-		}	else if (is_syncing) {
-		// check if we were syncing data
-			char tmp_str[20];
-
-			// increment counter and publish status
-			sync_cnt++;
-			snprintf(tmp_str, sizeof(tmp_str), "Synced(%d)", sync_cnt);
-			Publish_Connection(tmp_str);
-			is_syncing = 0; // sync complete at this point, everything that needed to be sent is above
 		} else if ((now_ms - last_published_ms) > PUB_PERIODIC_MS) {
 		// send periodically
 			// cycle through data to publish periodically
 			if (data_to_publish >= PUB_DATA_MAX) data_to_publish = PUB_DATA_PC_STATUS;
 
-			if (data_to_publish == PUB_DATA_PC_STATUS) Publish_PcStatus(current_pc_status);
-			else if (data_to_publish == PUB_DATA_TEMP) Publish_Temperature(current_temp);
+			if (data_to_publish == PUB_DATA_PC_STATUS)
+			    Publish_PcStatus(current_pc_status);
+			else if (data_to_publish == PUB_DATA_TEMP)
+			    Publish_Temperature(current_temp);
 
 			data_to_publish = (PubData_e)(data_to_publish + 1);
 			last_published_ms = now_ms;
@@ -172,7 +187,8 @@ void Mqtt_Reconnect() {
 	while (!client.connected()) {
 		Serial.print("Attempting MQTT connection...");
 		// Attempt to connect
-		if (client.connect(MQTT_CLIENT_ID, CLOUDMQTT_USER, CLOUDMQTT_PASS)) {
+		//if (client.connect(MQTT_CLIENT_ID, CLOUDMQTT_USER, CLOUDMQTT_PASS)) {
+		if (client.connect(MQTT_CLIENT_ID)) {
 			// Once connected, publish an announcement...
 			snprintf(tmp_str, sizeof(tmp_str), "%s", MQTT_CLIENT_ID);
 			Serial.println(tmp_str);
@@ -266,9 +282,9 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		// toggle output (PC power switch) if we need to change state
 		if (target_state != current_pc_status) {
 			if (target_state == 1)
-				TogglePc(TOGGLE_ON);
-			else
-				TogglePc(TOGGLE_OFF);
+				TogglePc(TOGGLE);
+			else if (target_state == 0)
+				TogglePc(TOGGLE);
 		}
 
 
@@ -284,6 +300,19 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		if (current_pc_status == 1) {
 			ResetPc();
 			reset = 0;
+		}
+	} else if (strcmp(TOPIC_IN_PC_HSHUT, topic) == 0) {
+		unsigned char reset = 0;
+		if ((char)payload[0] == 't') {
+				Serial.println("/hshut");
+				hshut = 1;
+		}
+
+		Serial.print("Checking state! current=");
+		Serial.println(current_pc_status);
+		if (current_pc_status == 1) {
+			ResetPc();
+			hshut = 0;
 		}
 	}
 }
