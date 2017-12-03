@@ -4,28 +4,30 @@ using System.Linq;
 using System.Text;
 using MqttService.Models;
 using MqttService.Persistence;
-using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
+using MqttService.Logging;
+using MQTTnet;
+using MQTTnet.Core;
+using MQTTnet.Core.Client;
 
 namespace MqttService.Client
 {
     public class Client
     {
-        private MqttClient _Client { get; set; }
+        private IMqttClient _Client { get; set; }
         public List<string> SubscribedTopics { get; private set; }
         public bool IsConnected { get; private set; }
         private SqlRepository Repository { get; set; }
+        public string BrokerAddress { get; private set; }
 
         public Client(string brokerUrl)
         {
+            this.IsConnected      = false;
+            this.BrokerAddress    = brokerUrl;
             this.SubscribedTopics = new List<string>();
-            this.Repository = new SqlRepository();
-            this._Client = new MqttClient(brokerUrl);
+            this.Repository       = new SqlRepository();
+            this._Client          = new MqttFactory().CreateMqttClient();
 
-            this._Client.MqttMsgPublished       += OnMessagePublished;
-            this._Client.MqttMsgSubscribed      += OnTopicSubscribed;
-            this._Client.MqttMsgPublishReceived += OnMessageReceived;
-            this._Client.MqttMsgUnsubscribed    += OnTopicUnsubscribed;
+            this._Client.ApplicationMessageReceived += OnMessageReceived;
 
             Connect();
             SubscribeToSavedDevices();
@@ -33,20 +35,32 @@ namespace MqttService.Client
 
         private void SubscribeToSavedDevices()
         {
+            if (!this.IsConnected)
+            {
+                Logger.Error("Client is not connected");
+                return;
+            }
+
             foreach (var m in this.Repository.Microcontrollers.All())
                 SubscribeToDevice(DeviceType.Microcontroller, m.DeviceId);
             foreach (var p in this.Repository.PowerStrips.All())
                 SubscribeToDevice(DeviceType.PowerStrip, p.DeviceId);
         }
 
-        public void Subscribe(string topic)
+        public async void Subscribe(string topic)
         {
+            if (!this.IsConnected)
+            {
+                Logger.Error("Client is not connected");
+                return;
+            }
+
+            Logger.Info(String.Format("Subscribing to '{0}'", topic));
             if (!IsSubscribed(topic))
             {
                 this.SubscribedTopics.Add(topic);
-                this._Client.Subscribe(
-                    new string[] { topic },
-                    new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE }
+                await this._Client.SubscribeAsync(
+                    new TopicFilterBuilder().WithTopic(topic).WithExactlyOnceQoS().Build()
                 );
             }
         }
@@ -62,12 +76,18 @@ namespace MqttService.Client
             return this.SubscribedTopics.Contains(topic);
         }
 
-        public void Unsubscribe(string topic)
+        public async void Unsubscribe(string topic)
         {
-            if(IsSubscribed(topic))
+            if (!this.IsConnected)
+            {
+                Logger.Error("Client is not connected");
+                return;
+            }
+
+            if (IsSubscribed(topic))
             {
                 this.SubscribedTopics.Remove(topic);
-                this._Client.Unsubscribe(new string[] { topic });
+                await this._Client.UnsubscribeAsync(topic);
             }
         }
 
@@ -77,34 +97,54 @@ namespace MqttService.Client
                 Unsubscribe(t);
         }
 
-        public void Publish(string topic, string message)
+        public async void Publish(string topic, string payload)
         {
-            this._Client.Publish(
-                topic, Encoding.UTF8.GetBytes(message),
-                MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE, false
-            );
+            if (!this.IsConnected)
+            {
+                Logger.Error("Client is not connected");
+                return;
+            }
+
+            var message = new MqttApplicationMessageBuilder()
+                .WithTopic(topic)
+                .WithPayload(payload)
+                .WithExactlyOnceQoS()
+                .WithRetainFlag(false)
+                .Build();
+            await this._Client.PublishAsync(message);
         }
 
         public void Disconnect()
         {
             if(this.IsConnected)
             {
-                this._Client.Disconnect();
+                this._Client.DisconnectAsync().Wait();
                 this.IsConnected = false;
             }
         }
 
         public void Connect()
         {
+            Logger.Info(String.Format("Connecting to '{0}'", this.BrokerAddress));
             if(!this.IsConnected)
             {
-                this._Client.Connect(Guid.NewGuid().ToString() + "-PDI-xklima22");
+                var options = new MqttClientOptionsBuilder()
+                    .WithWebSocketServer(this.BrokerAddress)
+                    .WithClientId(Guid.NewGuid().ToString() + "-PDI-xklima22")
+                    .Build();
+                this._Client.ConnectAsync(options).Wait();
                 this.IsConnected = this._Client.IsConnected;
             }
         }
 
         private void SubscribeToDevice(DeviceType type, string devId)
         {
+            if (!this.IsConnected)
+            {
+                Logger.Error("Client is not connected");
+                return;
+            }
+
             List<string> topics = new List<string>
             {
                 Topic.DeviceState(devId),
@@ -115,27 +155,23 @@ namespace MqttService.Client
             Subscribe(topics.ToArray());
         }
 
-        private void OnTopicUnsubscribed(object sender, MqttMsgUnsubscribedEventArgs e)
+        private void OnMessageReceived(object sender, MqttApplicationMessageReceivedEventArgs e)
         {
-            Console.WriteLine("Topic Unsubscribed: MessageId: {0}", e.MessageId);
-        }
-
-        private void OnMessageReceived(object sender, MqttMsgPublishEventArgs e)
-        {
-            Console.WriteLine("Message Received: Received: '{0}', Topic: '{1}'",
-                Encoding.UTF8.GetString(e.Message), e.Topic
-            );
-            if(e.Topic == Topic.DeviceAnnounce())
+            string topic   = e.ApplicationMessage.Topic;
+            string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+            Logger.Info(String.Format("Received message '{0}' in topic: '{1}'",
+                payload, topic
+            ));
+            if(topic == Topic.DeviceAnnounce())
             {
-                string device      = Encoding.UTF8.GetString(e.Message);
-                List<string> parts = device.Split('/').ToList();
+                List<string> parts = payload.Split('/').ToList();
                 string devType     = parts[0];
                 string devId       = parts[1];
                 if(parts.Count == 2)
                 {
                     if(devType == "mcu")
                     {
-                        Console.WriteLine("Adding MCU '{0}'", devId);
+                        Logger.Info(String.Format("Trying to add MCU '{0}'", devId));
                         if (!Repository.Microcontrollers.Contains(devId) &&
                         !Repository.PowerStrips.Contains(devId))
                         {
@@ -144,12 +180,12 @@ namespace MqttService.Client
                         }
                         else
                         {
-                            Console.WriteLine("MCU '{0}' is already in the database", devId);
+                            Logger.Warn(String.Format("MCU '{0}' is already in the database", devId));
                         }
                     }
                     else if(devType == "strip")
                     {
-                        Console.WriteLine("Adding power strip '{0}'", devId);
+                        Logger.Info(String.Format("Trying to add power strip '{0}'", devId));
                         if (!Repository.Microcontrollers.Contains(devId) &&
                         !Repository.PowerStrips.Contains(devId))
                         {
@@ -158,31 +194,19 @@ namespace MqttService.Client
                         }
                         else
                         {
-                            Console.WriteLine("Power strip '{0}' is already in the database", devId);
+                            Logger.Warn(String.Format("Power strip '{0}' is already in the database", devId));
                         }
                     }
                     else
                     {
-                        Console.Error.WriteLine("Invalid device type '{0}'", devId);
+                        Logger.Error(String.Format("Invalid device type '{0}'", devId));
                     }
                 }
                 else
                 {
-                    Console.Error.WriteLine("Invalid device identification '{0}'", device);
+                    Logger.Error(String.Format("Invalid device identification '{0}'", payload));
                 }
             }
-        }
-
-        private void OnTopicSubscribed(object sender, MqttMsgSubscribedEventArgs e)
-        {
-            Console.WriteLine("Topic Subscribed: MessageId: {0}", e.MessageId);
-        }
-
-        private void OnMessagePublished(object sender, MqttMsgPublishedEventArgs e)
-        {
-            Console.WriteLine("Message Published: MessageId: {0}, IsPublished: {1}",
-                e.MessageId, e.IsPublished
-            );
         }
     }
 }
