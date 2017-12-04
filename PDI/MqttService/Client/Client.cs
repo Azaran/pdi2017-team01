@@ -55,7 +55,7 @@ namespace MqttService.Client
                 return;
             }
 
-            Logger.Info(String.Format("Subscribing to '{0}'", topic));
+            Logger.Info("Subscribing to '{0}'", topic);
             if (!IsSubscribed(topic))
             {
                 this.SubscribedTopics.Add(topic);
@@ -125,15 +125,32 @@ namespace MqttService.Client
 
         public void Connect()
         {
-            Logger.Info(String.Format("Connecting to '{0}'", this.BrokerAddress));
+            Logger.Info("Trying secured connection to '{0}' ...", this.BrokerAddress);
             if(!this.IsConnected)
             {
                 var options = new MqttClientOptionsBuilder()
-                    .WithWebSocketServer(this.BrokerAddress)
-                    .WithClientId(Guid.NewGuid().ToString() + "-PDI-xklima22")
-                    .Build();
-                this._Client.ConnectAsync(options).Wait();
+                    .WithWebSocketServer(this.BrokerAddress);
+                    //.WithClientId(Guid.NewGuid().ToString() + "-PDI-xklima22");
+
+                try
+                {
+                    this._Client.ConnectAsync(options.WithTls().Build()).Wait();
+                }
+                catch(Exception)
+                {
+                    Logger.Error("Secured connection to {0} failed", this.BrokerAddress);
+                    Logger.Info("Trying unsecured connection ...");
+                    try
+                    {
+                        this._Client.ConnectAsync(options.Build()).Wait();
+                    }
+                    catch(Exception)
+                    {
+                        Logger.Error("Unsecured connection to {0} failed", this.BrokerAddress);
+                    }
+                }
                 this.IsConnected = this._Client.IsConnected;
+                Logger.Info("Connected: {0}", this.IsConnected);
             }
         }
 
@@ -159,9 +176,7 @@ namespace MqttService.Client
         {
             string topic   = e.ApplicationMessage.Topic;
             string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-            Logger.Info(String.Format("Received message '{0}' in topic: '{1}'",
-                payload, topic
-            ));
+            Logger.Info("Received message '{0}' in topic: '{1}'", payload, topic);
             if(topic == Topic.DeviceAnnounce())
             {
                 List<string> parts = payload.Split('/').ToList();
@@ -171,7 +186,7 @@ namespace MqttService.Client
                 {
                     if(devType == "mcu")
                     {
-                        Logger.Info(String.Format("Trying to add MCU '{0}'", devId));
+                        Logger.Info("Trying to add MCU '{0}'", devId);
                         if (!Repository.Microcontrollers.Contains(devId) &&
                         !Repository.PowerStrips.Contains(devId))
                         {
@@ -180,12 +195,12 @@ namespace MqttService.Client
                         }
                         else
                         {
-                            Logger.Warn(String.Format("MCU '{0}' is already in the database", devId));
+                            Logger.Warn("MCU '{0}' is already in the database", devId);
                         }
                     }
                     else if(devType == "strip")
                     {
-                        Logger.Info(String.Format("Trying to add power strip '{0}'", devId));
+                        Logger.Info("Trying to add power strip '{0}'", devId);
                         if (!Repository.Microcontrollers.Contains(devId) &&
                         !Repository.PowerStrips.Contains(devId))
                         {
@@ -194,17 +209,17 @@ namespace MqttService.Client
                         }
                         else
                         {
-                            Logger.Warn(String.Format("Power strip '{0}' is already in the database", devId));
+                            Logger.Warn("Power strip '{0}' is already in the database", devId);
                         }
                     }
                     else
                     {
-                        Logger.Error(String.Format("Invalid device type '{0}'", devId));
+                        Logger.Error("Invalid device type '{0}'", devId);
                     }
                 }
                 else
                 {
-                    Logger.Error(String.Format("Invalid device identification '{0}'", payload));
+                    Logger.Error("Invalid device identification '{0}'");
                 }
             }
         }

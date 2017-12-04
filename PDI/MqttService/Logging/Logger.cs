@@ -18,7 +18,7 @@ namespace MqttService.Logging
             }
         }
         
-        public static void Log(LogLevel level, string message)
+        private static void Log(LogLevel level, string message)
         {
             if (!initialized)
                 Init();
@@ -47,6 +47,26 @@ namespace MqttService.Logging
         public static void Error(string message)
         {
             Log(LogLevel.ERROR, message);
+        }
+
+        public static void Info(string fmt, params object [] args)
+        {
+            Log(LogLevel.INFO, String.Format(fmt, args));
+        }
+
+        public static void Debug(string fmt, params object[] args)
+        {
+            Log(LogLevel.DEBUG, String.Format(fmt, args));
+        }
+
+        public static void Warn(string fmt, params object[] args)
+        {
+            Log(LogLevel.WARN, String.Format(fmt, args));
+        }
+
+        public static void Error(string fmt, params object[] args)
+        {
+            Log(LogLevel.ERROR, String.Format(fmt, args));
         }
 
         private static string LogLevelToString(LogLevel level, bool abbr = true)
