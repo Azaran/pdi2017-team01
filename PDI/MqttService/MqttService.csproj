@@ -44,6 +44,9 @@
     <Reference Include="MQTTnet.Core, Version=2.5.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MQTTnet.2.5.3\lib\net461\MQTTnet.Core.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -57,9 +60,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Client\Publish.cs" />
+    <Compile Include="Client\Subscribe.cs" />
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Client\Client.cs" />
-    <Compile Include="Client\DeviceType.cs" />
     <Compile Include="Client\Topic.cs" />
     <Compile Include="Interfaces\IMicrocontrollerRepository.cs" />
     <Compile Include="Interfaces\IMqttService.cs" />

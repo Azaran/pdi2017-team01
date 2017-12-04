@@ -37,7 +37,7 @@ namespace MqttService.Persistence.Sql
 
         public void Delete(PowerStrip powerstrip)
         {
-            foreach (PowerStripEntity pe in this._mqqtSvcDbContext.PowerStrips)
+            foreach (var pe in this._mqqtSvcDbContext.PowerStrips)
             {
                 if (pe.DeviceId == powerstrip.DeviceId)
                 {
@@ -60,10 +60,10 @@ namespace MqttService.Persistence.Sql
         public void Update(IEnumerable<PowerStrip> powerstrips)
         {
             bool found;
-            foreach (PowerStrip ps in powerstrips)
+            foreach (var ps in powerstrips)
             {
                 found = false;
-                foreach (PowerStripEntity pe in this._mqqtSvcDbContext.PowerStrips)
+                foreach (var pe in this._mqqtSvcDbContext.PowerStrips)
                 {
                     if (pe.DeviceId == ps.DeviceId)
                     {
@@ -82,13 +82,20 @@ namespace MqttService.Persistence.Sql
 
         public bool Contains(string deviceId)
         {
-            foreach (PowerStripEntity pe in this._mqqtSvcDbContext.PowerStrips)
+            foreach (var pe in this._mqqtSvcDbContext.PowerStrips)
             {
-                System.Console.WriteLine("PSE: {0}", pe.DeviceId);
                 if (pe.DeviceId == deviceId)
                     return true;
             }
             return false;
+        }
+
+        public int Count()
+        {
+            int i = 0;
+            foreach (var pe in this._mqqtSvcDbContext.PowerStrips)
+                ++i;
+            return i;
         }
     }
 }

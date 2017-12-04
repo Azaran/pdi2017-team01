@@ -12,5 +12,6 @@ namespace MqttService.Interfaces
         void Delete(PowerStrip powerstrip);
         void DeleteAll();
         bool Contains(string deviceId);
+        int Count();
     }
 }

@@ -37,7 +37,7 @@ namespace MqttService.Persistence.Sql
 
         public void Delete(Microcontroller microcontroller)
         {
-            foreach (MicrocontrollerEntity me in this._mqqtSvcDbContext.Microcontrollers)
+            foreach (var me in this._mqqtSvcDbContext.Microcontrollers)
             {
                 if(me.DeviceId == microcontroller.DeviceId)
                 {
@@ -63,7 +63,7 @@ namespace MqttService.Persistence.Sql
             foreach(Microcontroller mc in microcontrollers)
             {
                 found = false;
-                foreach(MicrocontrollerEntity me in this._mqqtSvcDbContext.Microcontrollers)
+                foreach(var me in this._mqqtSvcDbContext.Microcontrollers)
                 {
                     if(me.DeviceId == mc.DeviceId)
                     {
@@ -83,12 +83,20 @@ namespace MqttService.Persistence.Sql
 
         public bool Contains(string deviceId)
         {
-            foreach(MicrocontrollerEntity me in this._mqqtSvcDbContext.Microcontrollers)
+            foreach(var me in this._mqqtSvcDbContext.Microcontrollers)
             {
                 if (me.DeviceId == deviceId)
                     return true;
             }
             return false;
+        }
+
+        public int Count()
+        {
+            int i = 0;
+            foreach (var me in this._mqqtSvcDbContext.Microcontrollers)
+                ++i;
+            return i;
         }
     }
 }

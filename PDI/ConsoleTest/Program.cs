@@ -32,8 +32,7 @@ namespace ConsoleTest
                 repo.Microcontrollers.Add(mc);
             if (pwss.Count == 0)
                 repo.PowerStrips.Add(ps);*/
-            var c = new Client("broker.hivemq.com:8000/mqtt");
-            c.Subscribe(Topic.DeviceAnnounce());
+            var c = new Client("mqtt-xklima22.azurewebsites.net:80/mqtt");
             Console.ReadKey();
         }
     }
