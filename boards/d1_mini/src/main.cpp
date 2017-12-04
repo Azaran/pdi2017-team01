@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <dht.h>
 #include <MQTTWebSocketClient.h>
@@ -29,13 +30,27 @@
 // note: using ESP GPIO numbers rather than Wemos for easier portability to other ESP versions
 
 // setup instances for Wifi
-#ifdef USE_SSL
-WiFiClient espClient;
+// Either of these can be used and they can be used together. Just comment or uncomment
+//#define USE_SSL
+//#define MQTT_OVER_WEBSOCKETS
+
+
+#ifdef USE_SSL 
+
+#ifdef MQTT_OVER_WEBSOCKETS
+MQTTWebSocketClient mws;
 #else
 WiFiClientSecure espClient;
 #endif
+
+#else
+
 #ifdef MQTT_OVER_WEBSOCKETS
 MQTTWebSocketClient mws;
+#else
+WiFiClient espClient;
+#endif
+
 #endif
 PubSubClient client;
 dht DHT;
@@ -89,20 +104,20 @@ void setup() {
 	Wifi_Connect();
 	client.setServer(CLOUDMQTT_SERVER, CLOUDMQTT_PORT);
 	client.setCallback(Subscription_Callback);
-	#ifdef MQTT_OVER_WEBSOCKETS
+//	#ifdef MQTT_OVER_WEBSOCKETS
 	// setup WebSockets
-	#ifdef USE_SSL
-	mws.beginSSL(CLOUDMQTT_SERVER, CLOUDMQTT_PORT, ROOT_TOPIC);
-	#else
+//	#ifdef USE_SSL
+//	mws.beginSSL(CLOUDMQTT_SERVER, CLOUDMQTT_PORT, ROOT_TOPIC);
+//	#else
+	//mws.setPath("/mqtt");
 	mws.begin(CLOUDMQTT_SERVER, CLOUDMQTT_PORT, ROOT_TOPIC);
-	#endif
-	//mws.onEvent(webSocketEvent);
+//	#endif
 	mws.setReconnectInterval(5000);
 	// setup MQTT over WebSockets
 	client.setClient(mws);
-	#else
-	client.setClient(espClient);
-	#endif
+//	#else
+//	client.setClient(espClient);
+//	#endif
 }
 
 void loop() {
@@ -302,7 +317,7 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 			reset = 0;
 		}
 	} else if (strcmp(TOPIC_IN_PC_HSHUT, topic) == 0) {
-		unsigned char reset = 0;
+		unsigned char hshut = 0;
 		if ((char)payload[0] == 't') {
 				Serial.println("/hshut");
 				hshut = 1;
@@ -311,7 +326,7 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		Serial.print("Checking state! current=");
 		Serial.println(current_pc_status);
 		if (current_pc_status == 1) {
-			TooglePc(TOGGLE_HARD_OFF);
+			TogglePc(TOGGLE_HARD_OFF);
 			hshut = 0;
 		}
 	}

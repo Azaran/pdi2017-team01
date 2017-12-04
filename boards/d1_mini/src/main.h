@@ -11,18 +11,31 @@
 
 #define IN_STATUS_INVERTED  true // true if reading 1 on input actually means the PC is off, PWR_LED is switching the transistor
 
-#define WIFI_SSID   "wifi-vecera"
-#define WIFI_PASS   "veceramakovskeho425"
+#define WIFI_SSID   "VeBe"
+#define WIFI_PASS   "87654321"
 
-// Either of these can be used and they can be used together. Just comment or uncomment
-#define USE_SSL
-#define MQTT_OVER_WEBSOCKETS
+//#if defined (USE_SSL)
+//
+//#if defined (MQTT_OVER_WEBSOCKETS)
+//#define CLOUDMQTT_PORT	 443
+//#else
+//#define CLOUDMQTT_PORT	 8883
+//#endif
 
-#define CLOUDMQTT_SERVER "broker.hivemq.com"
-#define CLOUDMQTT_PORT   8000
-#define CLOUDMQTT_USER   "vecera.vojta@gmail.com"
-#define CLOUDMQTT_PASS   "6b1efe2a"
-#define ROOT_TOPIC		 ""
+//#else
+
+#if defined (MQTT_OVER_WEBSOCKETS)
+#define CLOUDMQTT_PORT	 30000
+#else
+#define CLOUDMQTT_PORT	 1883
+#endif
+
+//#endif
+
+#define CLOUDMQTT_SERVER "192.168.1.10"
+#define CLOUDMQTT_USER   ""
+#define CLOUDMQTT_PASS   ""
+#define ROOT_TOPIC  	 ""
 
 #define MQTT_CLIENT_ID   "d1_mini"  // note: if you have multiple devices, assign them different ID's
 #define MQTT_CLIENT_CATEGORY "mcu"		// "mcu" or "strip" (strip = https://www.itead.cc/sonoff-pow.html and similar)
