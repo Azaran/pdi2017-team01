@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
+using System.Collections.Generic;
+using System.Data.Entity;
 using MqttService.Interfaces;
 using MqttService.Models;
 using MqttService.Persistence.Mapper;
@@ -37,15 +39,13 @@ namespace MqttService.Persistence.Sql
 
         public void Delete(Microcontroller microcontroller)
         {
-            foreach (var me in this._mqqtSvcDbContext.Microcontrollers)
+            var entry = _mqqtSvcDbContext.Microcontrollers.Where(
+                p => p.DeviceId == microcontroller.DeviceId).FirstOrDefault<MicrocontrollerEntity>();
+            if (entry != null)
             {
-                if(me.DeviceId == microcontroller.DeviceId)
-                {
-                    this._mqqtSvcDbContext.Microcontrollers.Remove(me);
-                    break;
-                }
+                _mqqtSvcDbContext.Entry(entry).State = EntityState.Deleted;
+                _mqqtSvcDbContext.SaveChanges();
             }
-            this._mqqtSvcDbContext.SaveChanges();
         }
 
         public void Dispose()
@@ -53,50 +53,40 @@ namespace MqttService.Persistence.Sql
             this._mqqtSvcDbContext?.Dispose();
         }
 
-        /// <summary>
-        /// Updates already saved microcontrollers and adds missing ones.
-        /// </summary>
-        /// <param name="microcontrollers">Collection of Microcontrollers</param>
-        public void Update(IEnumerable<Microcontroller> microcontrollers)
-        {
-            bool found;
-            foreach(Microcontroller mc in microcontrollers)
-            {
-                found = false;
-                foreach(var me in this._mqqtSvcDbContext.Microcontrollers)
-                {
-                    if(me.DeviceId == mc.DeviceId)
-                    {
-                        me.Temperature = mc.Temperature;
-                        me.Powered = mc.Powered;
-                        found = true;
-                    }
-                }
-
-                if(!found)
-                {
-                    Add(mc);
-                }
-            }
-            this._mqqtSvcDbContext.SaveChanges();
-        }
-
         public bool Contains(string deviceId)
         {
-            foreach(var me in this._mqqtSvcDbContext.Microcontrollers)
-            {
-                if (me.DeviceId == deviceId)
-                    return true;
-            }
-            return false;
+            var entry = _mqqtSvcDbContext.Microcontrollers.Where(
+                p => p.DeviceId == deviceId).FirstOrDefault<MicrocontrollerEntity>();
+            return entry == null ? false : true;
         }
 
         public int Count()
         {
-            int i = 0;
-            foreach (var me in this._mqqtSvcDbContext.Microcontrollers)
-                ++i;
-            return i;
+            return this._mqqtSvcDbContext.Microcontrollers.ToList().Count();
+        }
+
+        public void Update(string deviceId, bool powered)
+        {
+            var entry = _mqqtSvcDbContext.Microcontrollers.Where(
+                p => p.DeviceId == deviceId).FirstOrDefault<MicrocontrollerEntity>();
+            if (entry != null)
+            {
+                entry.Powered = powered;
+                _mqqtSvcDbContext.Entry(entry).State = EntityState.Modified;
+                _mqqtSvcDbContext.SaveChanges();
+            }
+        }
+
+        public void Update(string deviceId, double temperature)
+        {
+            var entry = _mqqtSvcDbContext.Microcontrollers.Where(
+                p => p.DeviceId == deviceId).FirstOrDefault<MicrocontrollerEntity>();
+            if (entry != null)
+            {
+                entry.Temperature = temperature;
+                _mqqtSvcDbContext.Entry(entry).State = EntityState.Modified;
+                _mqqtSvcDbContext.SaveChanges();
+            }
         }
     }
 }

@@ -10,5 +10,7 @@ namespace MqttService.Persistence.Entity
         public Guid Id { get; set; }
         public string DeviceId { get; set; }
         public bool Powered { get; set; }
+        public double EnergyConsumption { get; set; }
+        public string Date { get; set; }
     }
 }

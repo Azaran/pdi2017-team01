@@ -8,10 +8,11 @@ namespace MqttService.Interfaces
     {
         void Add(Microcontroller microcontroller);
         IEnumerable<Microcontroller> All();
-        void Update(IEnumerable<Microcontroller> microcontrollers);
         void Delete(Microcontroller microcontroller);
         void DeleteAll();
         bool Contains(string deviceId);
         int Count();
+        void Update(string deviceId, bool powered);
+        void Update(string deviceId, double temperature);
     }
 }

@@ -69,7 +69,7 @@ namespace MqttService.Client
             return STRIP_ROOT + STRIP_ANNOUNCE;
         }
 
-        public static string StripPower()
+        public static string StripPowerStatus()
         {
             return STRIP_ROOT + STRIP_SPOWER;
         }
@@ -77,6 +77,11 @@ namespace MqttService.Client
         public static string StripEnergy()
         {
             return STRIP_ROOT + STRIP_ENERGY;
+        }
+
+        public static string StripPowerCommand()
+        {
+            return STRIP_ROOT + STRIP_CPOWER;
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Linq;
 using MqttService.Models;
 using MqttService.Persistence.Entity;
+using System;
 
 namespace MqttService.Persistence.Mapper
 {
@@ -12,14 +13,16 @@ namespace MqttService.Persistence.Mapper
             return new PowerStripEntity
             {
                 DeviceId = ps.DeviceId,
-                Powered  = ps.Powered
+                Powered = ps.Powered,
+                EnergyConsumption = ps.EnergyConsumption,
+                Date = ps.Date
             };
         }
 
         public IEnumerable<PowerStrip> Map(IEnumerable<PowerStripEntity> powerstrips)
         {
             return powerstrips.Select(
-                ps => new PowerStrip(ps.DeviceId, ps.Powered)
+                ps => new PowerStrip(ps.DeviceId, ps.Powered, ps.EnergyConsumption, ps.Date)
             ).ToArray();
         }
     }

@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Data.Entity;
 using MqttService.Interfaces;
 using MqttService.Models;
 using MqttService.Persistence.Mapper;
@@ -37,15 +40,13 @@ namespace MqttService.Persistence.Sql
 
         public void Delete(PowerStrip powerstrip)
         {
-            foreach (var pe in this._mqqtSvcDbContext.PowerStrips)
+            var entry = _mqqtSvcDbContext.PowerStrips.Where(
+                p => p.DeviceId == powerstrip.DeviceId).FirstOrDefault<PowerStripEntity>();
+            if (entry != null)
             {
-                if (pe.DeviceId == powerstrip.DeviceId)
-                {
-                    this._mqqtSvcDbContext.PowerStrips.Remove(pe);
-                    break;
-                }
+                _mqqtSvcDbContext.Entry(entry).State = EntityState.Deleted;
+                _mqqtSvcDbContext.SaveChanges();
             }
-            this._mqqtSvcDbContext.SaveChanges();
         }
 
         public void Dispose()
@@ -53,49 +54,49 @@ namespace MqttService.Persistence.Sql
             this._mqqtSvcDbContext?.Dispose();
         }
 
-        /// <summary>
-        /// Updates already saved power strip and adds missing ones.
-        /// </summary>
-        /// <param name="powerstrips">Collection of PowerStrips</param>
-        public void Update(IEnumerable<PowerStrip> powerstrips)
-        {
-            bool found;
-            foreach (var ps in powerstrips)
-            {
-                found = false;
-                foreach (var pe in this._mqqtSvcDbContext.PowerStrips)
-                {
-                    if (pe.DeviceId == ps.DeviceId)
-                    {
-                        pe.Powered = ps.Powered;
-                        found = true;
-                    }
-                }
-
-                if (!found)
-                {
-                    Add(ps);
-                }
-            }
-            this._mqqtSvcDbContext.SaveChanges();
-        }
-
         public bool Contains(string deviceId)
         {
-            foreach (var pe in this._mqqtSvcDbContext.PowerStrips)
-            {
-                if (pe.DeviceId == deviceId)
-                    return true;
-            }
-            return false;
+            var entry = _mqqtSvcDbContext.PowerStrips.Where(
+                p => p.DeviceId == deviceId).FirstOrDefault<PowerStripEntity>();
+            return entry == null ? false : true;
         }
 
         public int Count()
         {
-            int i = 0;
-            foreach (var pe in this._mqqtSvcDbContext.PowerStrips)
-                ++i;
-            return i;
+            return this._mqqtSvcDbContext.PowerStrips.ToList().Count();
+        }
+
+        public void Update(string deviceId, bool powered)
+        {
+            var entry = _mqqtSvcDbContext.PowerStrips.Where(
+                p => p.DeviceId == deviceId).FirstOrDefault<PowerStripEntity>();
+            if (entry != null)
+            {
+                entry.Powered = powered;
+                _mqqtSvcDbContext.Entry(entry).State = EntityState.Modified;
+                _mqqtSvcDbContext.SaveChanges();
+            }
+        }
+
+        public void Update(string deviceId, double energyConsumption, string date)
+        {
+            var entry = _mqqtSvcDbContext.PowerStrips.Where(
+                p => p.DeviceId == deviceId).FirstOrDefault<PowerStripEntity>();
+            if (entry != null)
+            {
+                entry.EnergyConsumption = energyConsumption;
+                entry.Date = date;
+                _mqqtSvcDbContext.Entry(entry).State = EntityState.Modified;
+                _mqqtSvcDbContext.SaveChanges();
+            }
+        }
+
+        public string FirstId()
+        {
+            
+            if (Count() > 0)
+                return (this._mqqtSvcDbContext.PowerStrips.ToList()[0].DeviceId);
+            return null;
         }
     }
 }

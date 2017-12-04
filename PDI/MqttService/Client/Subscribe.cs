@@ -97,11 +97,16 @@ namespace MqttService.Client
             {
                 Topic.StripAnnounce(),
                 Topic.StripEnergy(),
-                Topic.StripPower()
+                Topic.StripPowerStatus()
             };
             Subscribe(topics.ToArray());
         }
 
+        /// <summary>
+        /// Event handler that parses incoming messages.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void OnMessageReceived(object sender, MqttApplicationMessageReceivedEventArgs e)
         {
             string topic = e.ApplicationMessage.Topic;
@@ -111,9 +116,13 @@ namespace MqttService.Client
             {
                 ProcessMcuAnnounce(payload);
             }
-            else if(topic == Topic.StripAnnounce())
+            else if (topic == Topic.StripAnnounce())
             {
                 ProcessStripAnnounce(payload);
+            }
+            else if (topic == Topic.StripPowerStatus())
+            {
+                ProcessStripPowerStatus(payload);
             }
             else
             {
@@ -126,6 +135,28 @@ namespace MqttService.Client
                     Console.WriteLine("TODO: IsMcuState");
                 }
             }
+        }
+
+        /// <summary>
+        /// Sets power strip's powered status to true/false if values in payload are on/off.
+        /// Does nothing if values are something else.
+        /// </summary>
+        /// <param name="payload"></param>
+        private void ProcessStripPowerStatus(string payload)
+        {
+            Console.WriteLine("PSPS");
+            payload = payload.Trim().ToLower();
+            string devId = Repository.PowerStrips.FirstId();
+            Console.WriteLine("ID: {0}", devId);
+            if (devId == null)
+            {
+                Logger.Warn("No power strip in the database. Can't update powered status.");
+                return;
+            }
+            if (payload == "on")
+                Repository.PowerStrips.Update(devId, true);
+            else if(payload == "off")
+                Repository.PowerStrips.Update(devId, false);
         }
 
         /// <summary>
