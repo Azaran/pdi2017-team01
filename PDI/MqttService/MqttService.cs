@@ -40,6 +40,7 @@ namespace MqttService
         public void Dispose()
         {
             repository?.Dispose();
+            client.Disconnect();
         }
 
         public IEnumerable<Microcontroller> GetMicrocontrollers()
