@@ -48,5 +48,23 @@ namespace MqttService.Client
             if (value == 0 || value == 1)
                 Publish(Topic.McuState(deviceId), value.ToString());
         }
+
+        /// <summary>
+        /// Issues hard shutdown command for given device.
+        /// </summary>
+        /// <param name="deviceId"></param>
+        public void PublishMcuHardShutdownCommand(string deviceId)
+        {
+            Publish(Topic.McuHardShutdown(deviceId), 1.ToString());
+        }
+
+        /// <summary>
+        /// Issues reset command for given device.
+        /// </summary>
+        /// <param name="deviceId"></param>
+        public void PublishMcuResetCommand(string deviceId)
+        {
+            Publish(Topic.McuReset(deviceId), 1.ToString());
+        }
     }
 }

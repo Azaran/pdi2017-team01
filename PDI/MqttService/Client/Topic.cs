@@ -5,14 +5,19 @@ namespace MqttService.Client
 {
     public static class Topic
     {
+        // MCU related topics:
         private const string MCU_ROOT       = "/vecera.vojta@gmail.com";
         private const string MCU_ANNOUNCE   = "/conn";
         private const string MCU_STATUS     = "/status";
         private const string MCU_TEMP       = "/temp";
         private const string MCU_STATE      = "/state";
+        private const string MCU_HSHUT      = "/hshut";
+        private const string MCU_RESET      = "/reset";
+
+        // Power strip related topics:
         private const string STRIP_ROOT     = "/strip/sonoff";
         private const string STRIP_CPOWER   = "/cmnd/power";
-        private const string STRIP_SPOWER   = "/stat/POWER";
+        private const string STRIP_SPOWER   = "/stat/Power";
         private const string STRIP_ANNOUNCE = "/tele/INFO1";
         private const string STRIP_ENERGY   = "/tele/ENERGY";
 
@@ -39,6 +44,16 @@ namespace MqttService.Client
         public static string McuState(string devId)
         {
             return McuTopicFromDeviceId(devId, MCU_STATE);
+        }
+
+        public static string McuHardShutdown(string devId)
+        {
+            return McuTopicFromDeviceId(devId, MCU_HSHUT);
+        }
+
+        public static string McuReset(string devId)
+        {
+            return McuTopicFromDeviceId(devId, MCU_RESET);
         }
 
         private static bool IsMcuMessage(string topic, string msg)
