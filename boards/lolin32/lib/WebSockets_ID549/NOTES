@@ -1,1 +1,0 @@
-Do not use standard WebSockets by defining that lib in platformio.ini. There isnt support for ESP32 yet. This folder contains ported version of WebSockets
