@@ -45,6 +45,16 @@ namespace MqttService.Client
             this._Client          = new MqttFactory().CreateMqttClient();
             this._Client.ApplicationMessageReceived += OnMessageReceived;
             this.BrokerAddress = brokerAddress; // This also calls Connect()
+            ReinitializeSubscriptions();
+        }
+
+        public void ReinitializeSubscriptions()
+        {
+            if (this.SubscribedTopics.Count > 0)
+            {
+                Unsubscribe(this.SubscribedTopics.ToArray());
+                this.SubscribedTopics.Clear();
+            }
             Subscribe(Topic.McuAnnounce());
             SubscribeToPowerStrip();
             SubscribeToSavedMcus();

@@ -3,9 +3,12 @@ using MQTTnet.Core;
 
 namespace MqttService.Client
 {
+    /// <summary>
+    /// Part of the Client class that handles MQTT publishing.
+    /// </summary>
     public partial class Client
     {
-        public async void Publish(string topic, string payload)
+        private async void Publish(string topic, string payload)
         {
             if (!this.IsConnected)
             {
@@ -20,6 +23,30 @@ namespace MqttService.Client
                 .WithRetainFlag(false)
                 .Build();
             await this._Client.PublishAsync(message);
+        }
+
+        /// <summary>
+        /// Commands power strip to power on/off. If value is not 1 or 0 does nothing.
+        /// Does nothing if no power strip is in the database.
+        /// </summary>
+        /// <param name="value"></param>
+        public void PublishStripPowerCommand(int value)
+        {
+            if(this._Repository.PowerStrips.Count() == 0 ||
+            value == 0 || value == 1)
+                Publish(Topic.StripPowerCommand(), value.ToString());
+        }
+
+        /// <summary>
+        /// Commands MCU to power on/off. If value is not 1 or 0 does nothing.
+        /// Does nothing if no power strip is in the database.
+        /// </summary>
+        /// <param name="deviceId"></param>
+        /// <param name="value"></param>
+        public void PublishMcuPowerCommand(string deviceId, int value)
+        {
+            if (value == 0 || value == 1)
+                Publish(Topic.McuState(deviceId), value.ToString());
         }
     }
 }

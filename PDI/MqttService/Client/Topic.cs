@@ -83,5 +83,13 @@ namespace MqttService.Client
         {
             return STRIP_ROOT + STRIP_CPOWER;
         }
+
+        public static string DeviceIdFromTopic(string topic)
+        {
+            List<string> parts = topic.Split('/').ToList();
+            if (parts.Count == 3 && parts[0] == MCU_ROOT)
+                return parts[1];
+            return null;
+        }
     }
 }
