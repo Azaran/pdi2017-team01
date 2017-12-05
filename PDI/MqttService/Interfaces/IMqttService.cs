@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ServiceModel;
 using System.Collections.Generic;
+using MqttService.Models;
 
 namespace MqttService.Interfaces
 {
@@ -8,12 +9,21 @@ namespace MqttService.Interfaces
     public interface IMqttService : IDisposable
     {
         [OperationContract]
-        void PublishTopic(string topic);
+        IEnumerable<PowerStrip> GetPowerStrips();
 
         [OperationContract]
-        void AddSubscribedTopic(string topic);
+        IEnumerable<Microcontroller> GetMicrocontrollers();
 
         [OperationContract]
-        IEnumerable<string> SubscribedTopics();
+        void CommandMcuPower(string deviceId, int value);
+
+        [OperationContract]
+        void CommandMcuHardShutdown(string deviceId);
+
+        [OperationContract]
+        void CommandMcuReset(string deviceId);
+
+        [OperationContract]
+        void CommandStripPower(int value);
     }
 }

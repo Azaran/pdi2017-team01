@@ -19,5 +19,10 @@ namespace MqttService.Persistence
             this.PowerStrips = new PowerStripSqlRepository(this._DbContext);
             this.Microcontrollers = new MicrocontrollerSqlRepository(this._DbContext);
         }
+
+        public void Dispose()
+        {
+            this._DbContext?.Dispose();
+        }
     }
 }
