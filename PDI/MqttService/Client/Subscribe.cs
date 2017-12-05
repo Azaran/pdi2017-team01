@@ -70,7 +70,7 @@ namespace MqttService.Client
                 return;
             }
 
-            foreach (var m in this.Repository.Microcontrollers.All())
+            foreach (var m in this._Repository.Microcontrollers.All())
                 SubscribeToMcu(m.DeviceId);
         }
 
@@ -146,7 +146,7 @@ namespace MqttService.Client
         {
             Console.WriteLine("PSPS");
             payload = payload.Trim().ToLower();
-            string devId = Repository.PowerStrips.FirstId();
+            string devId = _Repository.PowerStrips.FirstId();
             Console.WriteLine("ID: {0}", devId);
             if (devId == null)
             {
@@ -154,9 +154,9 @@ namespace MqttService.Client
                 return;
             }
             if (payload == "on")
-                Repository.PowerStrips.Update(devId, true);
+                _Repository.PowerStrips.Update(devId, true);
             else if(payload == "off")
-                Repository.PowerStrips.Update(devId, false);
+                _Repository.PowerStrips.Update(devId, false);
         }
 
         /// <summary>
@@ -167,7 +167,7 @@ namespace MqttService.Client
         /// <param name="payload"></param>
         private void ProcessStripAnnounce(string payload)
         {
-            if(Repository.PowerStrips.Count() >= 1)
+            if(_Repository.PowerStrips.Count() >= 1)
             {
                 Logger.Info("Some power strip is already in database");
                 return;
@@ -192,7 +192,7 @@ namespace MqttService.Client
             }
             var name = module.ToString() + " " + version.ToString();
             Logger.Info("Adding power strip '{0}' into the database", name);
-            this.Repository.PowerStrips.Add(new PowerStrip(name));
+            this._Repository.PowerStrips.Add(new PowerStrip(name));
         }
 
         private void ProcessMcuAnnounce(string payload)
@@ -205,10 +205,10 @@ namespace MqttService.Client
                 if (devType == "mcu")
                 {
                     Logger.Info("Trying to add MCU '{0}'", devId);
-                    if (!Repository.Microcontrollers.Contains(devId) &&
-                    !Repository.PowerStrips.Contains(devId))
+                    if (!_Repository.Microcontrollers.Contains(devId) &&
+                    !_Repository.PowerStrips.Contains(devId))
                     {
-                        this.Repository.Microcontrollers.Add(new Microcontroller(devId));
+                        this._Repository.Microcontrollers.Add(new Microcontroller(devId));
                         SubscribeToMcu(devId);
                     }
                     else
