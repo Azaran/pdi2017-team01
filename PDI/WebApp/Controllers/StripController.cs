@@ -10,11 +10,13 @@ namespace WebApp.Controllers
 {
     public class StripController : ApiController
     {
-        List<PowerStrip> strips = new List<PowerStrip>
+        static List<PowerStrip> strips = new List<PowerStrip>();
+        static MqttService.MqttService srv = new MqttService.MqttService();
+
+        static StripController()
         {
-            new PowerStrip ("Tansy2", true),
-            new PowerStrip ("Tansy4", false)
-        };
+            strips = srv.GetPowerStrips().ToList();
+        }
 
         [HttpGet]
         [ActionName("Read")]
@@ -39,6 +41,7 @@ namespace WebApp.Controllers
         [ActionName("Poweroff")]
         public IHttpActionResult PostPowerOff(string id)
         {
+            srv.CommandStripPower(0);
             return Ok(200);
         }
 
@@ -46,6 +49,7 @@ namespace WebApp.Controllers
         [ActionName("Poweron")]
         public IHttpActionResult PostPowerOn(string id)
         {
+            srv.CommandStripPower(1);
             return Ok(200);
         }
     }

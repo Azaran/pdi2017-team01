@@ -10,14 +10,14 @@ namespace WebApp.Controllers
 {
     public class McuController : ApiController
     {
-        List<Microcontroller> mcus = new List<Microcontroller>
-        {
-            new Microcontroller ("Tansy2", true, 45.4),
-            new Microcontroller ("Tansy3", false, 21.1),
-            new Microcontroller ("Tansy4", true, 44.4),
-            new Microcontroller ("Tansy5", true, 41.9),
-        };
+        static List<Microcontroller> mcus = new List<Microcontroller>();
+        static MqttService.MqttService srv = new MqttService.MqttService();
 
+        static McuController()
+        {
+            mcus = srv.GetMicrocontrollers().ToList();
+        }
+        
         [HttpGet]
         [ActionName("Read")]
         public List<Microcontroller> GetAllMcus()
@@ -41,6 +41,7 @@ namespace WebApp.Controllers
         [ActionName("Poweroff")]
         public IHttpActionResult PostPowerOff(string id)
         {
+            srv.CommandMcuPower(id, 0);
             return Ok(200);
         }
 
@@ -48,6 +49,7 @@ namespace WebApp.Controllers
         [ActionName("Poweron")]
         public IHttpActionResult PostPowerOn(string id)
         {
+            srv.CommandMcuPower(id, 1);
             return Ok(200);
         }
 
@@ -55,6 +57,7 @@ namespace WebApp.Controllers
         [ActionName("Kill")]
         public IHttpActionResult PostKill(string id)
         {
+            srv.CommandMcuHardShutdown(id);
             return Ok(200);
         }
 
@@ -62,6 +65,7 @@ namespace WebApp.Controllers
         [ActionName("Restart")]
         public IHttpActionResult PostRestart(string id)
         {
+            srv.CommandMcuReset(id);
             return Ok(200);
         }
     }
