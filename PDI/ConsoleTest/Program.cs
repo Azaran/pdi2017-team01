@@ -32,7 +32,7 @@ namespace ConsoleTest
                 repo.Microcontrollers.Add(mc);
             if (pwss.Count == 0)
                 repo.PowerStrips.Add(ps);*/
-            var c = new Client("wss://mqtt-xklima22.azurewebsites.net:443/mqtt");
+            var c = new Client("ws://mqtt-xklima22.azurewebsites.net:80/mqtt");
             Console.ReadKey();
         }
     }
