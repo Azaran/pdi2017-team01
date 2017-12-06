@@ -7,36 +7,38 @@
 #define OUT_STATE_INACTIVE  (!OUT_STATE_ACTIVE)
 
 #define TOGGLE  1000 // how long to keep the pwr pin (GPIO_OUT_SW) active when triggered, we to send signal of just small duration
-#define TOGGLE_HARD_OFF  1000 * 5// how long to keep the pwr pin (GPIO_OUT_SW) active when triggered, lets "hold" the power button for 5s
+#define TOGGLE_HARD_OFF  1000 * 5	// how long to keep the pwr pin (GPIO_OUT_SW) active when triggered, lets "hold" the power button for 5s
 
 #define IN_STATUS_INVERTED  true // true if reading 1 on input actually means the PC is off, PWR_LED is switching the transistor
 
 #define WIFI_SSID   "VeBe"
 #define WIFI_PASS   "87654321"
 
-//#if defined (USE_SSL)
-//
-//#if defined (MQTT_OVER_WEBSOCKETS)
-//#define CLOUDMQTT_PORT	 443
-//#else
-//#define CLOUDMQTT_PORT	 8883
-//#endif
+#ifdef USE_SSL
 
-//#else
-
+#define SSL true
 #if defined (MQTT_OVER_WEBSOCKETS)
-#define CLOUDMQTT_PORT	 30000
+#define CLOUDMQTT_PORT	 443
+#else
+#define CLOUDMQTT_PORT	 8883
+#endif
+
+#else
+
+#define SSL false
+#if defined (MQTT_OVER_WEBSOCKETS)
+#define CLOUDMQTT_PORT	 80
 #else
 #define CLOUDMQTT_PORT	 1883
 #endif
 
-//#endif
+#endif
 
-#define CLOUDMQTT_SERVER "192.168.1.10"
+#define CLOUDMQTT_SERVER "mqtt-xklima22.azurewebsites.net"
 #define CLOUDMQTT_USER   ""
 #define CLOUDMQTT_PASS   ""
 #define ROOT_TOPIC  	 ""
-
+#define CLOUDMQTT_PATH "/mqtt"
 #define MQTT_CLIENT_ID   "d1_mini"  // note: if you have multiple devices, assign them different ID's
 #define MQTT_CLIENT_CATEGORY "mcu"		// "mcu" or "strip" (strip = https://www.itead.cc/sonoff-pow.html and similar)
 #define MQTT_CLIENT_PATH "/" MQTT_CLIENT_CATEGORY "/" MQTT_CLIENT_ID
@@ -55,7 +57,7 @@
 #define PUB_MIN_MS          1000            // don't publish more often that this, even on status/temp change
 
 #define DEBOUNCE_STATUS_MS    1000 * 2   // 2 second debounce for PC on/off status
-#define TEMP_REFRESH_MS       1000 * 15   // periodic read of temperature
+#define TEMP_REFRESH_MS       1000 * 20   // periodic read of temperature
 
 // enum to cycle through all data that is to be sent periodically
 typedef enum

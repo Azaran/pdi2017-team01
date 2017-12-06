@@ -1,32 +1,35 @@
+// Either of these can be used and they can be used together. Just comment or uncomment
+#define MQTT_OVER_WEBSOCKETS
+#define USE_SSL
+
+#include <Arduino.h>
 #include <WiFi.h>
-#include <PubSubClient.h>
 #include <dht.h>
+#include <MQTTWebSocketClient.h>
+#include <PubSubClient.h>
 #include "main.h"
-// Wemos D1 mini pins compared to ESP GPIO
-// source: https://www.wemos.cc/product/d1-mini.html
-// Wemos|ESP
-// TX   TXD
-// RX   RXD
-// A0   A0
-// D0   GPIO16, doesn't have interrupt/pwm
-// D1   GPIO5/SCL
-// D2   GPIO4/SDA
-// D3   GPIO0, 10k PU, ESP special (set to 0 during reset to enter bootloader)
-// D4   GPIO2, 10k PU, LED, ESP special (should be high during reset)
-// D5   GPIO14/SCK
-// D6   GPIO12/MISO
-// D7   GPIO13/MOSI
-// D8   GPIO15/SS, 10k PD, ESP special (should be low during reset)
-// G    GND
-// 5V   -
-// 3V3  3.3V
-// RST  RST
 
-// note: using ESP GPIO numbers rather than Wemos for easier portability to other ESP versions
+/*
+ * There are some issues with the implementation and porting of the libraries
+ * but it seems to be working anyway. Don't be scared if you see stack or some
+ * socket errors. The board might reset or just reconnect and everything should
+ * work.
+ *
+ * EPS32 there are some unknown issues with sockets when using websockets with
+ * TLS
+ */
 
-// setup instances for Wifi and 1Wire
+#ifdef MQTT_OVER_WEBSOCKETS
+MQTTWebSocketClient mws;
+#else
+#ifdef USE_SSL
+WiFiClientSecure espClient;
+#else
 WiFiClient espClient;
-PubSubClient client(espClient);
+#endif
+#endif
+
+PubSubClient client;
 dht DHT;
 
 // variables
@@ -45,7 +48,6 @@ long last_temp_request_ms = 0;
 
 long last_published_ms = 0;
 PubData_e data_to_publish = PUB_DATA_PC_STATUS;
-unsigned char is_syncing = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Init functions
@@ -78,7 +80,27 @@ void setup() {
 	delay(500);
 	// connect to Wifi
 	Wifi_Connect();
-	// setup MQTT
+	#ifdef MQTT_OVER_WEBSOCKETS
+	// setup WebSockets
+	Serial.print("Using websockets URL:");
+	Serial.print(CLOUDMQTT_SERVER);
+	Serial.print(" port: ");
+	Serial.println(CLOUDMQTT_PORT);
+	mws.setUseSSL(SSL);
+	mws.setReconnectInterval(5000);
+	mws.setPath(CLOUDMQTT_PATH);
+	mws.connect(CLOUDMQTT_SERVER, CLOUDMQTT_PORT);
+	// setup MQTT over WebSockets w/o SSL
+	delay(10000);
+	client.setClient(mws);
+	#else
+	Serial.print("Using mqtt protocol URL:");
+	Serial.print(CLOUDMQTT_SERVER);
+	Serial.print(" port: ");
+	Serial.println(CLOUDMQTT_PORT);
+	// setup normal mqtt tcp/ssl
+	client.setClient(espClient);
+	#endif
 	client.setServer(CLOUDMQTT_SERVER, CLOUDMQTT_PORT);
 	client.setCallback(Subscription_Callback);
 }
@@ -87,6 +109,7 @@ void loop() {
 	// handle MQTT connection
 	if (!client.connected()) {
 		connect_cnt++;
+		Serial.printf("conn count: %d\n", connect_cnt);
 		Mqtt_Reconnect();
 		last_published_ms = last_status_unstable_ms = millis(); // init time here, it takes a while to connect
 	}
@@ -138,15 +161,6 @@ void loop() {
 			// or on temperature change
 			Publish_Temperature(current_temp);
 			last_published_ms = now_ms;
-		}	else if (is_syncing) {
-		// check if we were syncing data
-			char tmp_str[20];
-
-			// increment counter and publish status
-			sync_cnt++;
-			snprintf(tmp_str, sizeof(tmp_str), "Synced(%d)", sync_cnt);
-			Publish_Connection(tmp_str);
-			is_syncing = 0; // sync complete at this point, everything that needed to be sent is above
 		} else if ((now_ms - last_published_ms) > PUB_PERIODIC_MS) {
 		// send periodically
 			// cycle through data to publish periodically
@@ -172,7 +186,8 @@ void Mqtt_Reconnect() {
 	while (!client.connected()) {
 		Serial.print("Attempting MQTT connection...");
 		// Attempt to connect
-		if (client.connect(MQTT_CLIENT_ID, CLOUDMQTT_USER, CLOUDMQTT_PASS)) {
+		//if (client.connect(MQTT_CLIENT_ID, CLOUDMQTT_USER, CLOUDMQTT_PASS)) {
+		if (client.connect(MQTT_CLIENT_ID)) {
 			// Once connected, publish an announcement...
 			snprintf(tmp_str, sizeof(tmp_str), "%s", MQTT_CLIENT_ID);
 			Serial.println(tmp_str);
@@ -180,6 +195,7 @@ void Mqtt_Reconnect() {
 			// ... and resubscribe
 			client.subscribe(TOPIC_IN_PC_STATE);
 			client.subscribe(TOPIC_IN_PC_RESET);
+			client.subscribe(TOPIC_IN_PC_HSHUT);
 			break;
 		} else {
 			Serial.print("failed, rc=");
@@ -251,10 +267,10 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		unsigned char target_state = current_pc_status;
 		// now the switch in the app is sending 'true' or 'false'
 		// check for valid values
-		if ((char)payload[0] == 't') {
+		if ((char)payload[0] == '1') {
 				Serial.println("/state true");
 			target_state = 1;
-		} else if ((char)payload[0] == 'f') {
+		} else if ((char)payload[0] == '0') {
 				Serial.println("/state false");
 			target_state = 0;
 		}
@@ -266,15 +282,13 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		// toggle output (PC power switch) if we need to change state
 		if (target_state != current_pc_status) {
 			if (target_state == 1)
-				TogglePc(TOGGLE_ON);
+				TogglePc(TOGGLE);
 			else
-				TogglePc(TOGGLE_OFF);
+				TogglePc(TOGGLE);
 		}
-
-
 	} else if (strcmp(TOPIC_IN_PC_RESET, topic) == 0) {
 		unsigned char reset = 0;
-		if ((char)payload[0] == 't') {
+		if ((char)payload[0] == '1') {
 				Serial.println("/reset");
 				reset = 1;
 		}
@@ -284,6 +298,19 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		if (current_pc_status == 1) {
 			ResetPc();
 			reset = 0;
+		}
+	} else if (strcmp(TOPIC_IN_PC_HSHUT, topic) == 0) {
+		unsigned char hshut = 0;
+		if ((char)payload[0] == '1') {
+				Serial.println("/hshut");
+				hshut = 1;
+		}
+
+		Serial.print("Checking state! current=");
+		Serial.println(current_pc_status);
+		if (current_pc_status == 1) {
+			TogglePc(TOGGLE_HARD_OFF);
+			hshut = 0;
 		}
 	}
 }
@@ -295,11 +322,8 @@ void TogglePc(int state) {
 	Serial.println("Power switched!");
 }
 void ResetPc(void) {
-	/*
-	 * TODO: Test reset functionality
-	 */
 	digitalWrite(GPIO_OUT_RTSW, OUT_STATE_ACTIVE);
-	delay(TOGGLE_ON);
+	delay(TOGGLE);
 	digitalWrite(GPIO_OUT_RTSW, OUT_STATE_INACTIVE);
 	Serial.println("Reset!");
 }

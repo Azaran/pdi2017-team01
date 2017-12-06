@@ -45,7 +45,6 @@ namespace MqttService.Client
             this._Client          = new MqttFactory().CreateMqttClient();
             this._Client.ApplicationMessageReceived += OnMessageReceived;
             this.BrokerAddress = brokerAddress; // This also calls Connect()
-            ReinitializeSubscriptions();
         }
 
         public void ReinitializeSubscriptions()
@@ -60,16 +59,15 @@ namespace MqttService.Client
             SubscribeToSavedMcus();
         }
 
-        public void Disconnect()
+        public async void Disconnect()
         {
             if (this.IsConnected)
             {
-                var t = this._Client.DisconnectAsync();
-                t.Wait();
+                await this._Client.DisconnectAsync();
             }
         }
 
-        public void Connect()
+        public async void Connect()
         {
             if(IsConnected)
                 Disconnect();
@@ -97,12 +95,14 @@ namespace MqttService.Client
 
             try
             {
-                var t = this._Client.ConnectAsync(options.Build());
-                t.Wait();
+                await this._Client.ConnectAsync(options.Build());
+                ReinitializeSubscriptions();
             }
-            catch(Exception)
+            catch(Exception e)
             {
                 Logger.Error("Failed to connect to {0} {1} TLS", this.BrokerAddress, useTls);
+                Logger.Error(e.Message);
+                Logger.Error(e.StackTrace);
             }
             Logger.Info(this.IsConnected ? "Connected" : "Not connected");
         }

@@ -1,57 +1,35 @@
+// Either of these can be used and they can be used together. Just comment or uncomment
+#define MQTT_OVER_WEBSOCKETS
+#define USE_SSL
+
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <dht.h>
-#include <MQTTWebSocketClient.h>
 #include <Hash.h>
+#include <MQTTWebSocketClient.h>
 #include <PubSubClient.h>
 #include "main.h"
 
-
-// Wemos D1 mini pins compared to ESP GPIO
-// source: https://www.wemos.cc/product/d1-mini.html
-// Wemos|ESP
-// TX   TXD
-// RX   RXD
-// A0   A0
-// D0   GPIO16, doesn't have interrupt/pwm
-// D1   GPIO5/SCL
-// D2   GPIO4/SDA
-// D3   GPIO0, 10k PU, ESP special (set to 0 during reset to enter bootloader)
-// D4   GPIO2, 10k PU, LED, ESP special (should be high during reset)
-// D5   GPIO14/SCK
-// D6   GPIO12/MISO
-// D7   GPIO13/MOSI
-// D8   GPIO15/SS, 10k PD, ESP special (should be low during reset)
-// G    GND
-// 5V   -
-// 3V3  3.3V
-// RST  RST
-
-// note: using ESP GPIO numbers rather than Wemos for easier portability to other ESP versions
-
-// setup instances for Wifi
-// Either of these can be used and they can be used together. Just comment or uncomment
-//#define USE_SSL
-//#define MQTT_OVER_WEBSOCKETS
-
-
-#ifdef USE_SSL 
+/*
+ * There are some issues with the implementation and porting of the libraries
+ * but it seems to be working anyway. Don't be scared if you see stack or some
+ * socket errors. The board might reset or just reconnect and everything should
+ * work.
+ *
+ * EPS8266 seems to throw stack for the first connection after booting but
+ * after the self soft reset everything works and connection is stable.
+ */
 
 #ifdef MQTT_OVER_WEBSOCKETS
 MQTTWebSocketClient mws;
 #else
+#ifdef USE_SSL
 WiFiClientSecure espClient;
-#endif
-
-#else
-
-#ifdef MQTT_OVER_WEBSOCKETS
-MQTTWebSocketClient mws;
 #else
 WiFiClient espClient;
 #endif
-
 #endif
+
 PubSubClient client;
 dht DHT;
 
@@ -102,32 +80,41 @@ void setup() {
 	delay(500);
 	// connect to Wifi
 	Wifi_Connect();
+	#ifdef MQTT_OVER_WEBSOCKETS
+	// setup WebSockets
+	Serial.print("Using websockets URL:");
+	Serial.print(CLOUDMQTT_SERVER);
+	Serial.print(" port: ");
+	Serial.println(CLOUDMQTT_PORT);
+	mws.setUseSSL(SSL);
+	mws.setReconnectInterval(5000);
+	mws.setPath(CLOUDMQTT_PATH);
+	mws.connect(CLOUDMQTT_SERVER, CLOUDMQTT_PORT);
+	// setup MQTT over WebSockets w/o SSL
+	delay(10000);
+	client.setClient(mws);
+	#else
+	Serial.print("Using mqtt protocol URL:");
+	Serial.print(CLOUDMQTT_SERVER);
+	Serial.print(" port: ");
+	Serial.println(CLOUDMQTT_PORT);
+	// setup normal mqtt tcp/ssl
+	client.setClient(espClient);
+	#endif
 	client.setServer(CLOUDMQTT_SERVER, CLOUDMQTT_PORT);
 	client.setCallback(Subscription_Callback);
-//	#ifdef MQTT_OVER_WEBSOCKETS
-	// setup WebSockets
-//	#ifdef USE_SSL
-//	mws.beginSSL(CLOUDMQTT_SERVER, CLOUDMQTT_PORT, ROOT_TOPIC);
-//	#else
-	//mws.setPath("/mqtt");
-	mws.begin(CLOUDMQTT_SERVER, CLOUDMQTT_PORT, ROOT_TOPIC);
-//	#endif
-	mws.setReconnectInterval(5000);
-	// setup MQTT over WebSockets
-	client.setClient(mws);
-//	#else
-//	client.setClient(espClient);
-//	#endif
 }
 
 void loop() {
 	// handle MQTT connection
 	if (!client.connected()) {
 		connect_cnt++;
+		Serial.printf("conn count: %d\n", connect_cnt);
 		Mqtt_Reconnect();
 		last_published_ms = last_status_unstable_ms = millis(); // init time here, it takes a while to connect
 	}
 	client.loop();
+
 
 	// handle temperature reading
 	if ((millis() - last_temp_request_ms) > TEMP_REFRESH_MS) {
@@ -211,6 +198,7 @@ void Mqtt_Reconnect() {
 			// ... and resubscribe
 			client.subscribe(TOPIC_IN_PC_STATE);
 			client.subscribe(TOPIC_IN_PC_RESET);
+			client.subscribe(TOPIC_IN_PC_HSHUT);
 			break;
 		} else {
 			Serial.print("failed, rc=");
@@ -282,11 +270,11 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		unsigned char target_state = current_pc_status;
 		// now the switch in the app is sending 'true' or 'false'
 		// check for valid values
-		if ((char)payload[0] == 't') {
-				Serial.println("/state true");
+		if ((char)payload[0] == '1') {
+				Serial.println("/state 1");
 			target_state = 1;
-		} else if ((char)payload[0] == 'f') {
-				Serial.println("/state false");
+		} else if ((char)payload[0] == '0') {
+				Serial.println("/state 0");
 			target_state = 0;
 		}
 
@@ -301,11 +289,9 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 			else if (target_state == 0)
 				TogglePc(TOGGLE);
 		}
-
-
 	} else if (strcmp(TOPIC_IN_PC_RESET, topic) == 0) {
 		unsigned char reset = 0;
-		if ((char)payload[0] == 't') {
+		if ((char)payload[0] == '1') {
 				Serial.println("/reset");
 				reset = 1;
 		}
@@ -318,7 +304,7 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 		}
 	} else if (strcmp(TOPIC_IN_PC_HSHUT, topic) == 0) {
 		unsigned char hshut = 0;
-		if ((char)payload[0] == 't') {
+		if ((char)payload[0] == '1') {
 				Serial.println("/hshut");
 				hshut = 1;
 		}
