@@ -59,15 +59,15 @@ namespace MqttService.Client
             SubscribeToSavedMcus();
         }
 
-        public async void Disconnect()
+        public void Disconnect()
         {
             if (this.IsConnected)
             {
-                await this._Client.DisconnectAsync();
+                this._Client.DisconnectAsync().Wait();
             }
         }
 
-        public async void Connect()
+        public void Connect()
         {
             if(IsConnected)
                 Disconnect();
@@ -95,8 +95,7 @@ namespace MqttService.Client
 
             try
             {
-                await this._Client.ConnectAsync(options.Build());
-                ReinitializeSubscriptions();
+                this._Client.ConnectAsync(options.Build()).Wait();
             }
             catch(Exception e)
             {
@@ -104,6 +103,7 @@ namespace MqttService.Client
                 Logger.Error(e.Message);
                 Logger.Error(e.StackTrace);
             }
+            ReinitializeSubscriptions();
             Logger.Info(this.IsConnected ? "Connected" : "Not connected");
         }
     }
