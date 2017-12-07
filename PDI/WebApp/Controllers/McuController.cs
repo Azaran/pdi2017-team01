@@ -5,30 +5,36 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using MqttService.Models;
+using System.Threading.Tasks;
 
 namespace WebApp.Controllers
 {
     public class McuController : ApiController
     {
-        static List<Microcontroller> mcus = new List<Microcontroller>();
-        static MqttService.MqttService srv = new MqttService.MqttService();
+        private static MqttService.MqttService srv =  new MqttService.MqttService();
 
-        static McuController()
+        private async Task<MqttService.MqttService> GetMqttService()
         {
-            mcus = srv.GetMicrocontrollers().ToList();
+            if (!srv.GetClientConnected())
+                await srv.ConnectClient();
+            
+            return srv;
         }
-        
+
         [HttpGet]
         [ActionName("Read")]
-        public List<Microcontroller> GetAllMcus()
+        public async Task<List<Microcontroller>> GetAllMcus()
         {
-            return mcus;
+            MqttService.MqttService lService = await GetMqttService();
+            //return new List<Microcontroller> { new Microcontroller("Tansy2") };
+            return lService.GetMicrocontrollers().ToList();   // DB problem?
         }
 
         [HttpGet]
         [ActionName("Read")]
         public IHttpActionResult GetMcu(string id)
         {
+            var mcus = srv.GetMicrocontrollers().ToList();
             var mcu = mcus.FirstOrDefault((p) => p.DeviceId == id);
             if (mcu == null)
             {

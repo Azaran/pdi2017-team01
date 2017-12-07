@@ -32,10 +32,15 @@ namespace ConsoleTest
                 repo.Microcontrollers.Add(mc);
             if (pwss.Count == 0)
                 repo.PowerStrips.Add(ps);*/
+            /*
+                  Console.WriteLine("Connecting");
+                  var c = new Client("ws://mqtt-xklima22.azurewebsites.net:80/mqtt");
+                  Console.WriteLine("Connected");
+            */
 
-            Console.WriteLine("Connecting");
-            var c = new Client("ws://mqtt-xklima22.azurewebsites.net:80/mqtt");
-            Console.WriteLine("Connected");
+            MqttService.MqttService srv = new MqttService.MqttService();
+            srv.ConnectClient().Wait();
+            List<Microcontroller> mcus = srv.GetMicrocontrollers().ToList();
             Console.ReadKey();
         }
     }

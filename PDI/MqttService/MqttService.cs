@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MqttService.Interfaces;
 using MqttService.Models;
-
+using System.Threading.Tasks;
 
 namespace MqttService
 {
@@ -51,6 +51,16 @@ namespace MqttService
         public IEnumerable<PowerStrip> GetPowerStrips()
         {
             return repository.PowerStrips.All();
+        }
+
+        public bool GetClientConnected()
+        {
+            return this.client.IsConnected;
+        }
+
+        public async Task ConnectClient()
+        {
+            await this.client.Connect();
         }
     }
 }

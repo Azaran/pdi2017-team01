@@ -5,30 +5,35 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using MqttService.Models;
+using System.Threading.Tasks;
 
 namespace WebApp.Controllers
 {
     public class StripController : ApiController
     {
-        static List<PowerStrip> strips = new List<PowerStrip>();
-        static MqttService.MqttService srv = new MqttService.MqttService();
+        private static MqttService.MqttService srv;
 
-        static StripController()
+        private async Task<MqttService.MqttService> GetMqttService()
         {
-            strips = srv.GetPowerStrips().ToList();
+            if (!srv.GetClientConnected())
+                await srv.ConnectClient();
+
+            return srv;
         }
 
         [HttpGet]
         [ActionName("Read")]
-        public List<PowerStrip> GetAllStrips()
+        public async Task<List<PowerStrip>> GetAllStrips()
         {
-            return strips;
+            MqttService.MqttService lService = await GetMqttService();
+            return lService.GetPowerStrips().ToList();
         }
 
         [HttpGet]
         [ActionName("Read")]
         public IHttpActionResult GetStrip(string id)
         {
+            var strips = srv.GetPowerStrips().ToList();
             var strip = strips.FirstOrDefault((p) => p.DeviceId == id);
             if (strip == null)
             {

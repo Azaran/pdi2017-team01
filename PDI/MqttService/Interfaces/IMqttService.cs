@@ -2,6 +2,7 @@
 using System.ServiceModel;
 using System.Collections.Generic;
 using MqttService.Models;
+using System.Threading.Tasks;
 
 namespace MqttService.Interfaces
 {
@@ -25,5 +26,11 @@ namespace MqttService.Interfaces
 
         [OperationContract]
         void CommandStripPower(int value);
+
+        [OperationContract]
+        bool GetClientConnected();
+
+        [OperationContract]
+        Task ConnectClient();
     }
 }

@@ -4,6 +4,7 @@ using MqttService.Persistence;
 using MqttService.Logging;
 using MQTTnet;
 using MQTTnet.Core.Client;
+using System.Threading.Tasks;
 
 namespace MqttService.Client
 {
@@ -23,7 +24,6 @@ namespace MqttService.Client
                 if(value != _brokerAddress)
                 {
                     _brokerAddress = value;
-                    Connect();
                 }
             }
         }
@@ -67,7 +67,7 @@ namespace MqttService.Client
             }
         }
 
-        public void Connect()
+        public async Task Connect()
         {
             if(IsConnected)
                 Disconnect();
@@ -95,7 +95,7 @@ namespace MqttService.Client
 
             try
             {
-                this._Client.ConnectAsync(options.Build()).Wait();
+                await this._Client.ConnectAsync(options.Build());
             }
             catch(Exception e)
             {
@@ -103,6 +103,7 @@ namespace MqttService.Client
                 Logger.Error(e.Message);
                 Logger.Error(e.StackTrace);
             }
+
             ReinitializeSubscriptions();
             Logger.Info(this.IsConnected ? "Connected" : "Not connected");
         }
