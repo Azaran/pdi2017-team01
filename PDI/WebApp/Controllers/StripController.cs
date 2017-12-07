@@ -11,7 +11,7 @@ namespace WebApp.Controllers
 {
     public class StripController : ApiController
     {
-        private static MqttService.MqttService srv;
+        private static MqttService.MqttService srv = new MqttService.MqttService();
 
         private async Task<MqttService.MqttService> GetMqttService()
         {
@@ -26,14 +26,16 @@ namespace WebApp.Controllers
         public async Task<List<PowerStrip>> GetAllStrips()
         {
             MqttService.MqttService lService = await GetMqttService();
-            return lService.GetPowerStrips().ToList();
+            List<PowerStrip> result = lService.GetPowerStrips().ToList();
+            return result;
         }
 
         [HttpGet]
         [ActionName("Read")]
-        public IHttpActionResult GetStrip(string id)
+        public async Task<IHttpActionResult> GetStrip(string id)
         {
-            var strips = srv.GetPowerStrips().ToList();
+            MqttService.MqttService lService = await GetMqttService();
+            var strips = lService.GetPowerStrips().ToList();
             var strip = strips.FirstOrDefault((p) => p.DeviceId == id);
             if (strip == null)
             {
@@ -44,17 +46,19 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [ActionName("Poweroff")]
-        public IHttpActionResult PostPowerOff(string id)
+        public async Task<IHttpActionResult> PostPowerOff(string id)
         {
-            srv.CommandStripPower(0);
+            MqttService.MqttService lService = await GetMqttService();
+            lService.CommandStripPower(0);
             return Ok(200);
         }
 
         [HttpPost]
         [ActionName("Poweron")]
-        public IHttpActionResult PostPowerOn(string id)
+        public async Task<IHttpActionResult> PostPowerOn(string id)
         {
-            srv.CommandStripPower(1);
+            MqttService.MqttService lService = await GetMqttService();
+            lService.CommandStripPower(1);
             return Ok(200);
         }
     }

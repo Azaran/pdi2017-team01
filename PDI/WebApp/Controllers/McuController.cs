@@ -11,7 +11,7 @@ namespace WebApp.Controllers
 {
     public class McuController : ApiController
     {
-        private static MqttService.MqttService srv =  new MqttService.MqttService();
+        private static MqttService.MqttService srv = new MqttService.MqttService();
 
         private async Task<MqttService.MqttService> GetMqttService()
         {
@@ -26,15 +26,17 @@ namespace WebApp.Controllers
         public async Task<List<Microcontroller>> GetAllMcus()
         {
             MqttService.MqttService lService = await GetMqttService();
-            //return new List<Microcontroller> { new Microcontroller("Tansy2") };
-            return lService.GetMicrocontrollers().ToList();   // DB problem?
+            List<Microcontroller> result = lService.GetMicrocontrollers().ToList();
+            return result;
+            
         }
 
         [HttpGet]
         [ActionName("Read")]
-        public IHttpActionResult GetMcu(string id)
+        public async Task<IHttpActionResult> GetMcu(string id)
         {
-            var mcus = srv.GetMicrocontrollers().ToList();
+            MqttService.MqttService lService = await GetMqttService();
+            var mcus = lService.GetMicrocontrollers().ToList();
             var mcu = mcus.FirstOrDefault((p) => p.DeviceId == id);
             if (mcu == null)
             {
@@ -45,33 +47,37 @@ namespace WebApp.Controllers
 
         [HttpPost]
         [ActionName("Poweroff")]
-        public IHttpActionResult PostPowerOff(string id)
+        public async Task<IHttpActionResult> PostPowerOff(string id)
         {
-            srv.CommandMcuPower(id, 0);
+            MqttService.MqttService lService = await GetMqttService();
+            lService.CommandMcuPower(id, 0);
             return Ok(200);
         }
 
         [HttpPost]
         [ActionName("Poweron")]
-        public IHttpActionResult PostPowerOn(string id)
+        public async Task<IHttpActionResult> PostPowerOn(string id)
         {
-            srv.CommandMcuPower(id, 1);
+            MqttService.MqttService lService = await GetMqttService();
+            lService.CommandMcuPower(id, 1);
             return Ok(200);
         }
 
         [HttpPost]
         [ActionName("Kill")]
-        public IHttpActionResult PostKill(string id)
+        public async Task<IHttpActionResult> PostKill(string id)
         {
-            srv.CommandMcuHardShutdown(id);
+            MqttService.MqttService lService = await GetMqttService();
+            lService.CommandMcuHardShutdown(id);
             return Ok(200);
         }
 
         [HttpPost]
         [ActionName("Restart")]
-        public IHttpActionResult PostRestart(string id)
+        public async Task<IHttpActionResult> PostRestart(string id)
         {
-            srv.CommandMcuReset(id);
+            MqttService.MqttService lService = await GetMqttService();
+            lService.CommandMcuReset(id);
             return Ok(200);
         }
     }
