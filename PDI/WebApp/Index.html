@@ -39,18 +39,23 @@
         });
 
         function onLoad() {
+            // We need the data before formating the page
             $.ajaxSetup({
                 async: false
             });
 
             // Read Strip table
-            stripData = $.getJSON(readUriStrip);
-
-            // Read Strip table
             var stripData;
-            $.getJSON(readUriStrip).done(function (data) {
-                stripData = data;
-            });
+            $.getJSON(readUriStrip)
+                .done(function (data) {
+                    stripData = data;
+                })
+                // If failed, connect to broker and reload the page
+                .fail(function (data) {
+                    $.getJSON(readUriMcu);
+                    location.reload();
+                }
+            );
 
             // Read MCU table
             $.getJSON(readUriMcu).done(function (data) {
@@ -64,7 +69,7 @@
                     $('#machineList').append(e);
 
                 });
-            });
+            });            
         }
 
         // Format single item of available machines
@@ -72,7 +77,7 @@
             return "<a href=\"#" + item.DeviceId + "Machine\">" + (item.Powered ? onMcu : offMcu) + " " + item.DeviceId + "</a>";
         }
 
-        // Format entry of machine
+        // Format each machine entry
         function formatMachine(item, stripData) {
             var name = '<div class="headerMachineDiv"><p class="headerMachine">' + item.DeviceId + '</p></div>';
             var desc = '<div class="machineDescDiv"><p>Status:</p><p>Temperature:</p></div>';
@@ -83,21 +88,23 @@
 
             $.each(stripData, function (key, stripUnit) {
                 if (stripUnit.DeviceId == item.DeviceId) {
-                    strip = '<div class="headerStripValue">' + formatStrip(item) + '</div>';
+                    strip = '<div class="headerStripValue">' + formatStrip(stripUnit) + '</div>';
                 }
             });
 
             return name + desc + values + buttons + power + strip;
         }
 
+        // Create buttons for machine that is running
         function createOnButtons(id) {
             var offButton = '<button onclick="postOff(\'' + id + '\')" class="postOff">Turn OFF</button>';
-            var restartButton = '<button onclick="postRestart(\'' + id + '\')" class="postRestart">Restart</button>';
+            var restartButton = '<button onclick="postRestart(\'' + id + '\')" class="postRestart">Reset</button>';
             var killButton = '<button onclick="postKill(\'' + id + '\')" class="postKill">Hard Shutdown</button>';
 
             return offButton + restartButton + killButton;
         }
 
+        // Create buttons for machine that is off
         function createOffButtons(id) {
             return '<button onclick="postOn(\'' + id + '\')" class="postOn">Turn ON</button>';
         }
@@ -105,10 +112,10 @@
         // Format strip info
         function formatStrip(item) {
             var desc = '<div class="stripDescDiv"><p>Status:</p><p>Consumption:</p></div>';
-            var values = '<div class="stripValuesDiv"><p>' + (item.Powered ? onStrip : offStrip) + '</p><p>' + item.Consumption + ' W</p></div>';
+            var values = '<div class="stripValuesDiv"><p>' + (item.Powered ? onStrip : offStrip) + '</p><p>' + item.EnergyConsumption + ' W</p></div>';
             var buttons = '<div class="stripButtonsDiv">' + (item.Powered ? createStripOnButtons(item.DeviceId) : createStripOffButtons(item.DeviceId)) + '</div> <p> </p>';
-            //var xoxo = "<div>xoxo</div>"
-            return desc + values + buttons; // + xoxo;
+
+            return desc + values + buttons;
         }
 
         function createStripOnButtons(id) {
@@ -136,7 +143,7 @@
         }
 
         function postRestart(id) {
-            if (confirm("Do you really want to RESTART " + id + " ?"))
+            if (confirm("Do you really want to RESET " + id + " ?"))
                 $.post("/api/mcu/restart/" + id);
         }
 
