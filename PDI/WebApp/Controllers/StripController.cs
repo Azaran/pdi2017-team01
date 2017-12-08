@@ -49,7 +49,7 @@ namespace WebApp.Controllers
         public async Task<IHttpActionResult> PostPowerOff(string id)
         {
             MqttService.MqttService lService = await GetMqttService();
-            lService.CommandStripPower(0);
+            lService.CommandStripPower(id, 0);
             return Ok(200);
         }
 
@@ -58,7 +58,7 @@ namespace WebApp.Controllers
         public async Task<IHttpActionResult> PostPowerOn(string id)
         {
             MqttService.MqttService lService = await GetMqttService();
-            lService.CommandStripPower(1);
+            lService.CommandStripPower(id, 1);
             return Ok(200);
         }
     }

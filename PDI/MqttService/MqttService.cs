@@ -32,9 +32,9 @@ namespace MqttService
             client.PublishMcuResetCommand(deviceId);
         }
 
-        public void CommandStripPower(int value)
+        public void CommandStripPower(string deviceId, int value)
         {
-            client.PublishStripPowerCommand(value);
+            client.PublishStripPowerCommand(deviceId, value);
         }
 
         public void Dispose()

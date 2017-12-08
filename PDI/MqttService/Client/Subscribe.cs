@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Collections.Generic;
+using System.Globalization;
 using MqttService.Models;
 using MqttService.Logging;
 using MQTTnet.Core;
@@ -56,6 +57,18 @@ namespace MqttService.Client
                 SubscribeToMcu(m.DeviceId);
         }
 
+        private void SubscribeToSavedPowerStrips()
+        {
+            if (!this.IsConnected)
+            {
+                Logger.Error("Client is not connected");
+                return;
+            }
+
+            foreach (var m in this._Repository.PowerStrips.All())
+                SubscribeToPowerStrip(m.DeviceId);
+        }
+
         private void SubscribeToMcu(string devId)
         {
             if (!this.IsConnected)
@@ -73,13 +86,12 @@ namespace MqttService.Client
             Subscribe(topics.ToArray());
         }
 
-        private void SubscribeToPowerStrip()
+        private void SubscribeToPowerStrip(string devId)
         {
             List<string> topics = new List<string>
             {
-                Topic.StripAnnounce(),
-                Topic.StripEnergy(),
-                Topic.StripPowerStatus()
+                Topic.StripEnergy(devId),
+                Topic.StripPowerStatus(devId)
             };
             Subscribe(topics.ToArray());
         }
@@ -114,33 +126,31 @@ namespace MqttService.Client
         {
             string topic = e.ApplicationMessage.Topic;
             string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+
             Logger.Info("Received message '{0}' in topic: '{1}'", payload, topic);
             if (topic == Topic.McuAnnounce())
             {
                 ProcessMcuAnnounce(payload);
             }
-            else if (topic == Topic.StripAnnounce())
+            else if (Topic.IsPowerStripAnnounce(topic))
             {
-                ProcessStripAnnounce(payload);
+                ProcessStripAnnounce(topic);
             }
-            else if (topic == Topic.StripPowerStatus())
+            else if (Topic.IsPowerStripPowerStatus(topic))
             {
-                ProcessStripPowerStatus(payload);
+                ProcessStripPowerStatus(topic, payload);
             }
-            else if(topic == Topic.StripEnergy())
+            else if(Topic.IsPowerStripEnergy(topic))
             {
-                ProcessStripEnergyStatus(payload);
+                ProcessStripEnergyStatus(topic, payload);
             }
-            else
+            else if (Topic.IsMcuStatus(topic))
             {
-                if (Topic.IsMcuStatus(topic))
-                {
-                    ProcessMcuStatus(topic, payload);
-                }
-                else if (Topic.IsMcuState(topic))
-                {
-                    ProcessMcuTemperature(topic, payload);
-                }
+                ProcessMcuStatus(topic, payload);
+            }
+            else if (Topic.IsMcuTemp(topic))
+            {
+                ProcessMcuTemperature(topic, payload);
             }
         }
 
@@ -152,7 +162,7 @@ namespace MqttService.Client
         /// <param name="payload"></param>
         private void ProcessMcuTemperature(string topic, string payload)
         {
-            string deviceId = Topic.DeviceIdFromTopic(topic);
+            string deviceId = Topic.McuIdFromTopic(topic);
             if (deviceId == null)
             {
                 Logger.Error("Failed to get device ID from topic {0}", topic);
@@ -162,13 +172,14 @@ namespace MqttService.Client
             double temp = 0.0;
             try
             {
-                temp = Double.Parse(payload.Trim());
+                temp = Double.Parse(payload.Trim(), CultureInfo.InvariantCulture);
             }
             catch
             {
                 Logger.Error("Failed to convert MCU temperature value to double: '{0}'", payload);
                 return;
             }
+            Logger.Info("Updating MCU {0} temperature to '{1}'", deviceId, temp.ToString());
             this._Repository.Microcontrollers.Update(deviceId, temp);
         }
 
@@ -180,14 +191,15 @@ namespace MqttService.Client
         /// <param name="payload"></param>
         private void ProcessMcuStatus(string topic, string payload)
         {
-            string deviceId = Topic.DeviceIdFromTopic(topic);
+            string deviceId = Topic.McuIdFromTopic(topic);
             if (deviceId == null)
             {
-                Logger.Error("Failed to get device ID from topic {0}", topic);
+                Logger.Error("Failed to get MCU ID from topic {0}", topic);
                 return;
             }
 
             payload = payload.Trim();
+            Logger.Info("Updating MCU {0} status to '{1}'", deviceId, payload.ToUpper());
             if (payload == "0")
             {
                 this._Repository.Microcontrollers.Update(deviceId, false);
@@ -207,12 +219,12 @@ namespace MqttService.Client
         /// Does nothing in case of error.
         /// </summary>
         /// <param name="payload"></param>
-        private void ProcessStripEnergyStatus(string payload)
+        private void ProcessStripEnergyStatus(string topic, string payload)
         {
-            string devId = _Repository.PowerStrips.FirstId();
+            string devId = Topic.PowerStripIdFromTopic(topic);
             if (devId == null)
             {
-                Logger.Warn("No power strip in the database. Can't update powered status.");
+                Logger.Error("Failed to get power strip ID from topic {0}", payload);
                 return;
             }
 
@@ -238,13 +250,14 @@ namespace MqttService.Client
                 double val = 0.0;
                 try
                 {
-                    val = Double.Parse(energy.ToString());
+                    val = Double.Parse(energy.ToString(), CultureInfo.InvariantCulture);
                 }
                 catch
                 {
                     Logger.Error("Failed to convert energy consumption value '{0}' to double", energy);
                     return;
                 }
+                Logger.Info("Updating power strip {0} energy status to {1} on {2}", devId, val.ToString(), time.ToString());
                 _Repository.PowerStrips.Update(devId, val, time.ToString());
             }
         }
@@ -254,15 +267,16 @@ namespace MqttService.Client
         /// Does nothing if values are something else.
         /// </summary>
         /// <param name="payload"></param>
-        private void ProcessStripPowerStatus(string payload)
+        private void ProcessStripPowerStatus(string topic, string payload)
         {
             payload = payload.Trim().ToLower();
-            string devId = _Repository.PowerStrips.FirstId();
+            string devId = Topic.PowerStripIdFromTopic(topic);
             if (devId == null)
             {
-                Logger.Warn("No power strip in the database. Can't update powered status.");
+                Logger.Error("Failed to get power strip ID from topic {0}", payload);
                 return;
             }
+            Logger.Info("Updating power strip {0} status to '{1}'", devId, payload.ToUpper());
             if (payload == "on")
                 _Repository.PowerStrips.Update(devId, true);
             else if(payload == "off")
@@ -275,34 +289,23 @@ namespace MqttService.Client
         /// Only one power strip may be in DB at the same time.
         /// </summary>
         /// <param name="payload"></param>
-        private void ProcessStripAnnounce(string payload)
+        private void ProcessStripAnnounce(string topic)
         {
-            if(_Repository.PowerStrips.Count() >= 1)
+            topic = topic.Trim().ToLower();
+            string devId = Topic.PowerStripIdFromTopic(topic);
+            if (devId == null)
             {
-                Logger.Info("Some power strip is already in database");
+                Logger.Error("Failed to get power strip ID from topic {0}", topic);
                 return;
             }
-
-            JObject json = null;
-            try
+            if(_Repository.PowerStrips.Contains(devId))
             {
-                json = JObject.Parse(payload);
-            }
-            catch
-            {
-                Logger.Error("Power strip payload - Failed to parse JSON: '{0}'", payload);
+                Logger.Warn("Power strip {0} is already in the database", devId);
                 return;
             }
-            var module  = json["Module"];
-            var version = json["Version"];
-            if (module == null || version == null)
-            {
-                Logger.Error("Invalid power strip announce payload: '{0}'", payload);
-                return;
-            }
-            var name = module.ToString() + " " + version.ToString();
-            Logger.Info("Adding power strip '{0}' into the database", name);
-            this._Repository.PowerStrips.Add(new PowerStrip(name));
+            Logger.Info("Adding power strip '{0}' into the database", devId);
+            this._Repository.PowerStrips.Add(new PowerStrip(devId));
+            SubscribeToPowerStrip(devId);
         }
 
         /// <summary>

@@ -25,7 +25,7 @@ namespace MqttService.Interfaces
         void CommandMcuReset(string deviceId);
 
         [OperationContract]
-        void CommandStripPower(int value);
+        void CommandStripPower(string deviceId, int value);
 
         [OperationContract]
         bool GetClientConnected();

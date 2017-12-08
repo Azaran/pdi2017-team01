@@ -40,6 +40,7 @@ namespace ConsoleTest
 
             MqttService.MqttService srv = new MqttService.MqttService();
             srv.ConnectClient().Wait();
+            Console.WriteLine("Connected");
             List<Microcontroller> mcus = srv.GetMicrocontrollers().ToList();
             Console.ReadKey();
         }

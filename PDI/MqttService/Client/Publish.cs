@@ -30,11 +30,11 @@ namespace MqttService.Client
         /// Does nothing if no power strip is in the database.
         /// </summary>
         /// <param name="value"></param>
-        public void PublishStripPowerCommand(int value)
+        public void PublishStripPowerCommand(string devId, int value)
         {
             if(this._Repository.PowerStrips.Count() == 0 ||
             value == 0 || value == 1)
-                Publish(Topic.StripPowerCommand(), value.ToString());
+                Publish(Topic.StripPowerCommand(devId), value.ToString());
         }
 
         /// <summary>
@@ -46,7 +46,9 @@ namespace MqttService.Client
         public void PublishMcuPowerCommand(string deviceId, int value)
         {
             if (value == 0 || value == 1)
+            {
                 Publish(Topic.McuState(deviceId), value.ToString());
+            }
         }
 
         /// <summary>

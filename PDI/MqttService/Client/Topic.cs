@@ -6,7 +6,7 @@ namespace MqttService.Client
     public static class Topic
     {
         // MCU related topics:
-        private const string MCU_ROOT       = "/vecera.vojta@gmail.com";
+        private const string MCU_ROOT       = "vecera.vojta@gmail.com";
         private const string MCU_ANNOUNCE   = "/conn";
         private const string MCU_STATUS     = "/status";
         private const string MCU_TEMP       = "/temp";
@@ -15,20 +15,25 @@ namespace MqttService.Client
         private const string MCU_RESET      = "/reset";
 
         // Power strip related topics:
-        private const string STRIP_ROOT     = "/strip/sonoff";
+        private const string STRIP_ROOT     = "strip";
+        private const string STRIP_ANNOUNCE = "/+/tele/INFO1";
         private const string STRIP_CPOWER   = "/cmnd/power";
         private const string STRIP_SPOWER   = "/stat/Power";
-        private const string STRIP_ANNOUNCE = "/tele/INFO1";
         private const string STRIP_ENERGY   = "/tele/ENERGY";
 
         private static string McuTopicFromDeviceId(string devId, string topic)
         {
-            return MCU_ROOT + "/" + devId + topic;
+            return "/" + MCU_ROOT + "/" + devId + topic;
+        }
+
+        private static string StripTopicFromDeviceId(string deviceId, string topic)
+        {
+            return "/" + STRIP_ROOT + "/" + deviceId + topic;
         }
 
         public static string McuAnnounce()
         {
-            return MCU_ROOT + MCU_ANNOUNCE;
+            return "/" + MCU_ROOT + MCU_ANNOUNCE;
         }
 
         public static string McuStatus(string devId)
@@ -59,7 +64,7 @@ namespace MqttService.Client
         private static bool IsMcuMessage(string topic, string msg)
         {
             List<string> parts = topic.Split('/').ToList();
-            if (parts.Count == 3 && parts[0] == MCU_ROOT && parts[2] == MCU_STATUS)
+            if (parts.Count == 4 && parts[1] == MCU_ROOT && ("/" + parts[3]) == msg)
                 return true;
             return false;
         }
@@ -81,29 +86,69 @@ namespace MqttService.Client
 
         public static string StripAnnounce()
         {
-            return STRIP_ROOT + STRIP_ANNOUNCE;
+            return "/" + STRIP_ROOT + STRIP_ANNOUNCE;
         }
 
-        public static string StripPowerStatus()
+        public static string StripPowerStatus(string devId)
         {
-            return STRIP_ROOT + STRIP_SPOWER;
+            return StripTopicFromDeviceId(devId, STRIP_SPOWER);
         }
 
-        public static string StripEnergy()
+        public static string StripEnergy(string devId)
         {
-            return STRIP_ROOT + STRIP_ENERGY;
+            return StripTopicFromDeviceId(devId, STRIP_ENERGY);
         }
 
-        public static string StripPowerCommand()
+        public static string StripPowerCommand(string devId)
         {
-            return STRIP_ROOT + STRIP_CPOWER;
+            return StripTopicFromDeviceId(devId, STRIP_CPOWER);
         }
 
-        public static string DeviceIdFromTopic(string topic)
+        public static bool IsPowerStripMessage(string topic, string msg1, string msg2)
         {
             List<string> parts = topic.Split('/').ToList();
-            if (parts.Count == 3 && parts[0] == MCU_ROOT)
-                return parts[1];
+            if (parts.Count == 5 && parts[1] == STRIP_ROOT && parts[3] == msg1 && parts[4] == msg2)
+                return true;
+            return false;
+        }
+
+        public static bool IsPowerStripAnnounce(string topic)
+        {
+            List<string> p = StripAnnounce().Split('/').ToList();
+            return IsPowerStripMessage(topic, p[3], p[4]);
+        }
+
+        public static bool IsPowerStripPowerCommand(string topic)
+        {
+            List<string> p = StripPowerCommand("id").Split('/').ToList();
+            return IsPowerStripMessage(topic, p[3], p[4]);
+        }
+
+        public static bool IsPowerStripPowerStatus(string topic)
+        {
+            List<string> p = StripPowerStatus("id").Split('/').ToList();
+            return IsPowerStripMessage(topic, p[3], p[4]);
+        }
+
+        public static bool IsPowerStripEnergy(string topic)
+        {
+            List<string> p = StripEnergy("id").Split('/').ToList();
+            return IsPowerStripMessage(topic, p[3], p[4]);
+        }
+
+        public static string McuIdFromTopic(string topic)
+        {
+            List<string> parts = topic.Split('/').ToList();
+            if (parts.Count == 4 && parts[1] == MCU_ROOT)
+                return parts[2];
+            return null;
+        }
+
+        public static string PowerStripIdFromTopic(string topic)
+        {
+            List<string> parts = topic.Split('/').ToList();
+            if (parts.Count == 5 && parts[1] == STRIP_ROOT)
+                return parts[2];
             return null;
         }
     }

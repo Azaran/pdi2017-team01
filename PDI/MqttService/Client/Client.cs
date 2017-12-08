@@ -55,8 +55,9 @@ namespace MqttService.Client
                 this.SubscribedTopics.Clear();
             }
             Subscribe(Topic.McuAnnounce());
-            SubscribeToPowerStrip();
+            Subscribe(Topic.StripAnnounce());
             SubscribeToSavedMcus();
+            SubscribeToSavedPowerStrips();
         }
 
         public void Disconnect()
