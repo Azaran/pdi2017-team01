@@ -92,9 +92,21 @@
     <None Include="platformio.ini" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lib\arduinoWebSockets\src\libb64\cdecode.c" />
+    <ClCompile Include="lib\arduinoWebSockets\src\libb64\cencode.c" />
+    <ClCompile Include="lib\arduinoWebSockets\src\WebSockets.cpp" />
+    <ClCompile Include="lib\arduinoWebSockets\src\WebSocketsServer.cpp" />
+    <ClCompile Include="lib\mqtt-websocket-mcu\MQTTWebSocketClient.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lib\arduinoWebSockets\src\libb64\cdecode_inc.h" />
+    <ClInclude Include="lib\arduinoWebSockets\src\libb64\cencode_inc.h" />
+    <ClInclude Include="lib\arduinoWebSockets\src\WebSockets.h" />
+    <ClInclude Include="lib\arduinoWebSockets\src\WebSocketsClient.h" />
+    <ClInclude Include="lib\arduinoWebSockets\src\WebSocketsServer.h" />
+    <ClInclude Include="lib\mqtt-websocket-mcu\CircularByteBuffer.h" />
+    <ClInclude Include="lib\mqtt-websocket-mcu\MQTTWebSocketClient.h" />
     <ClInclude Include="src\main.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

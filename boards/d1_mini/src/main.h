@@ -11,8 +11,8 @@
 
 #define IN_STATUS_INVERTED  true // true if reading 1 on input actually means the PC is off, PWR_LED is switching the transistor
 
-#define WIFI_SSID   "VeBe"
-#define WIFI_PASS   "87654321"
+#define WIFI_SSID   "Your SSID"
+#define WIFI_PASS   "Your WiFi password"
 
 #ifdef USE_SSL
 

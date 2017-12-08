@@ -92,9 +92,12 @@
     <None Include="platformio.ini" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="lib\mqtt-websocket-mcu\MQTTWebSocketClient.cpp" />
     <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="lib\mqtt-websocket-mcu\CircularByteBuffer.h" />
+    <ClInclude Include="lib\mqtt-websocket-mcu\MQTTWebSocketClient.h" />
     <ClInclude Include="src\main.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
