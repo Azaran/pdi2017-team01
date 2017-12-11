@@ -49,13 +49,14 @@
             $.getJSON(readUriStrip)
                 .done(function (data) {
                     stripData = data;
-                })
+                });/*
                 // If failed, connect to broker and reload the page
                 .fail(function (data) {
                     $.getJSON(readUriMcu);
-                    location.reload();
+                    alert("Hoj")
+                    window.setTimeout(location.reload, 5000);
                 }
-            );
+            );*/
 
             // Read MCU table
             $.getJSON(readUriMcu).done(function (data) {
