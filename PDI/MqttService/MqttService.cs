@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MqttService.Interfaces;
 using MqttService.Models;
 using System.Threading.Tasks;
+using MqttService.Logging;
 
 namespace MqttService
 {
@@ -45,7 +46,16 @@ namespace MqttService
 
         public IEnumerable<Microcontroller> GetMicrocontrollers()
         {
-            return repository.Microcontrollers.All();
+            IEnumerable <Microcontroller> x = repository.Microcontrollers.All();
+
+            foreach (var mcu in x)
+            {
+                Logger.Info("GetAll info");
+                Logger.Info(mcu.DeviceId);
+                Logger.Info(mcu.Temperature.ToString());
+            }
+
+            return x;
         }
 
         public IEnumerable<PowerStrip> GetPowerStrips()

@@ -10,8 +10,8 @@ namespace MqttService.Persistence.Sql
 {
     public class MicrocontrollerSqlRepository : IMicrocontrollerRepository
     {
-        private readonly MicrocontrollerMapper _microcontrollerMapper = new MicrocontrollerMapper();
-        private readonly MqttServiceDbContext _mqqtSvcDbContext;
+        private MicrocontrollerMapper _microcontrollerMapper = new MicrocontrollerMapper();
+        private MqttServiceDbContext _mqqtSvcDbContext;
 
         public MicrocontrollerSqlRepository(MqttServiceDbContext mqttSvcDbContext)
         {
@@ -29,6 +29,7 @@ namespace MqttService.Persistence.Sql
 
         public IEnumerable<Microcontroller> All()
         {
+            this._mqqtSvcDbContext = new MqttServiceDbContext();
             return this._microcontrollerMapper.Map(this._mqqtSvcDbContext.Microcontrollers);
         }
 

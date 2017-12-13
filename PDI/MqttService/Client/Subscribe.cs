@@ -315,33 +315,15 @@ namespace MqttService.Client
         /// <param name="payload"></param>
         private void ProcessMcuAnnounce(string payload)
         {
-            List<string> parts = payload.Split('/').ToList();
-            string devType     = parts[0];
-            string devId       = parts[1];
-            if (parts.Count == 2)
+            Logger.Info("Trying to add MCU '{0}'", payload);
+            if (!_Repository.Microcontrollers.Contains(payload))
             {
-                if (devType == "mcu")
-                {
-                    Logger.Info("Trying to add MCU '{0}'", devId);
-                    if (!_Repository.Microcontrollers.Contains(devId) &&
-                    !_Repository.PowerStrips.Contains(devId))
-                    {
-                        this._Repository.Microcontrollers.Add(new Microcontroller(devId));
-                        SubscribeToMcu(devId);
-                    }
-                    else
-                    {
-                        Logger.Warn("Device '{0}' is already in the database", devId);
-                    }
-                }
-                else
-                {
-                    Logger.Error("Invalid device type '{0}'", devId);
-                }
+                this._Repository.Microcontrollers.Add(new Microcontroller(payload));
+                SubscribeToMcu(payload);
             }
             else
             {
-                Logger.Error("Invalid device identification '{0}'");
+                Logger.Warn("Device '{0}' is already in the database", payload);
             }
         }
     }

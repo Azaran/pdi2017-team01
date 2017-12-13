@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using MqttService.Logging;
 
 namespace MqttService.Client
 {
     public static class Topic
     {
         // MCU related topics:
-        private const string MCU_ROOT       = "vecera.vojta@gmail.com";
+        private const string MCU_ROOT       = "mcu";
         private const string MCU_ANNOUNCE   = "/conn";
         private const string MCU_STATUS     = "/status";
         private const string MCU_TEMP       = "/temp";
@@ -33,7 +34,7 @@ namespace MqttService.Client
 
         public static string McuAnnounce()
         {
-            return "/" + MCU_ROOT + MCU_ANNOUNCE;
+            return MCU_ANNOUNCE;
         }
 
         public static string McuStatus(string devId)
@@ -63,8 +64,10 @@ namespace MqttService.Client
 
         private static bool IsMcuMessage(string topic, string msg)
         {
+            Logger.Info(topic);
             List<string> parts = topic.Split('/').ToList();
-            if (parts.Count == 4 && parts[1] == MCU_ROOT && ("/" + parts[3]) == msg)
+            foreach (var s in parts) Logger.Info(s);
+            if (parts.Count == 4 &&  ("/" + parts[3]) == msg)
                 return true;
             return false;
         }
