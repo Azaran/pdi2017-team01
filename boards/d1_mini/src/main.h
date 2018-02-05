@@ -1,6 +1,6 @@
-#define GPIO_OUT_PWSW     12  // D6 // used as output, for toggling transistor that turns on/off the pc
+#define GPIO_OUT_PWSW     14  // D6 // used as output, for toggling transistor that turns on/off the pc
 #define GPIO_OUT_RTSW     13  // D7 // used as output, for toggling transistor that resets the pc
-#define GPIO_IN_STATUS  14  // D5 // used as input for PC on/off status
+#define GPIO_IN_STATUS  12  // D5 // used as input for PC on/off status
 #define GPIO_TEMP					2		// D4
 
 #define OUT_STATE_ACTIVE    1   // use define so it's simple to change if signal should be active high or low (NPN or PNP BJT)

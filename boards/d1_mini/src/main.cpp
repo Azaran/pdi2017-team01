@@ -147,6 +147,7 @@ void loop() {
 	if ((now_ms - last_status_unstable_ms) > DEBOUNCE_STATUS_MS) {
 		if (current_pc_status != tmp_status) {
 			current_pc_status = tmp_status;
+			Publish_PcStatus(current_pc_status);
 			Serial.print("PC status ");
 			Serial.println(current_pc_status);
 		}
@@ -290,31 +291,22 @@ void Subscription_Callback(char* topic, unsigned char* payload, unsigned int len
 				TogglePc(TOGGLE);
 		}
 	} else if (strcmp(TOPIC_IN_PC_RESET, topic) == 0) {
-		unsigned char reset = 0;
-		if ((char)payload[0] == '1') {
+		if ((char)payload[0] == '1')
 				Serial.println("/reset");
-				reset = 1;
-		}
 
 		Serial.print("Checking state! current=");
 		Serial.println(current_pc_status);
-		if (current_pc_status == 1) {
+		if (current_pc_status == 1)
 			ResetPc();
-			reset = 0;
-		}
+
 	} else if (strcmp(TOPIC_IN_PC_HSHUT, topic) == 0) {
-		unsigned char hshut = 0;
-		if ((char)payload[0] == '1') {
+		if ((char)payload[0] == '1')
 				Serial.println("/hshut");
-				hshut = 1;
-		}
 
 		Serial.print("Checking state! current=");
 		Serial.println(current_pc_status);
-		if (current_pc_status == 1) {
+		if (current_pc_status == 1)
 			TogglePc(TOGGLE_HARD_OFF);
-			hshut = 0;
-		}
 	}
 }
 
